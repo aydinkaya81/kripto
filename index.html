@@ -30,7 +30,7 @@
         <div class="container mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i data-lucide="wallet" class="text-blue-400 w-6 h-6"></i>
-                <h1 class="text-lg font-bold tracking-tight">KayaFinans <span class="text-slate-500 font-mono text-[10px] ml-1">v2.1</span></h1>
+                <h1 class="text-lg font-bold tracking-tight">KayaFinans <span class="text-slate-500 font-mono text-[10px] ml-1">v2.2</span></h1>
             </div>
             <div id="header-total-value" class="text-green-400 font-bold text-lg">0.00 ₺</div>
         </div>
@@ -53,7 +53,7 @@
             <div class="mt-auto p-4 bg-slate-50 rounded-2xl border border-slate-100">
                 <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Sistem Durumu</p>
                 <div class="flex items-center gap-2">
-                    <div id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
+                    <div id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-amber-500 loading-pulse"></div>
                     <span id="sync-status" class="text-xs font-medium text-slate-600">Bağlanıyor...</span>
                 </div>
             </div>
@@ -230,6 +230,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Senin Firebase Bilgilerin
         const firebaseConfig = {
             apiKey: "AIzaSyBPFWe9FSkUBaiyaeBMhiXZm7g8QlfZzKQ",
             authDomain: "kripto-ee5f6.firebaseapp.com",
@@ -242,7 +243,10 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = "kripto_v2_kaya";
+        
+        // KRİTİK: Firebase kurallarına uygun yol (artifacts/{appId}/public/data/mainState)
+        const appId = "kripto_v2_kaya"; 
+        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mainState');
 
         const defaultState = {
             aydin: {
@@ -260,63 +264,74 @@
         let isInitialized = false;
         let usdRate = 34.25;
 
-        // AUTH & SYNC
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                console.log("Giriş yapıldı:", user.uid);
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mainState');
+        // AUTH & SYNC DÖNGÜSÜ
+        async function startSync() {
+            try {
+                // 1. Anonim Giriş Dene
+                await signInAnonymously(auth);
                 
-                onSnapshot(docRef, (snap) => {
-                    if (snap.exists()) {
-                        state = snap.data();
-                        updateStatus("Bulut Aktif", "bg-green-500");
+                // 2. Auth Değişimini Dinle
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        console.log("Bağlantı başarılı: ", user.uid);
+                        // 3. Veriyi Dinle
+                        onSnapshot(docRef, (snap) => {
+                            if (snap.exists()) {
+                                state = snap.data();
+                                updateStatus("Bulut Aktif", "bg-green-500");
+                            } else {
+                                updateStatus("İlk Kurulum...", "bg-blue-400", true);
+                                setDoc(docRef, state); // Bulutta veri yoksa şablonu gönder
+                            }
+                            isInitialized = true;
+                            document.getElementById('last-sync-time').innerText = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
+                            render();
+                        }, (err) => {
+                            console.error("Firestore İzleme Hatası:", err);
+                            updateStatus("İzin Hatası: Firestore", "bg-red-500");
+                        });
                     } else {
-                        updateStatus("İlk Kurulum...", "bg-blue-400", true);
-                        setDoc(docRef, state); // İlk veriyi gönder
+                        updateStatus("Oturum Bekleniyor", "bg-amber-500", true);
                     }
-                    isInitialized = true;
-                    document.getElementById('last-sync-time').innerText = new Date().toLocaleTimeString('tr-TR', {hour:'2-digit', minute:'2-digit'});
-                    render();
-                }, (err) => {
-                    console.error("Firebase Hatası:", err);
-                    updateStatus("Hata: " + err.code, "bg-red-500");
                 });
-            } else {
-                updateStatus("Bağlanıyor...", "bg-amber-500", true);
-                try {
-                    await signInAnonymously(auth);
-                } catch (e) {
-                    updateStatus("Hata: Oturum Açılamadı", "bg-red-500");
-                    console.error("Auth hatası:", e);
-                }
+            } catch (e) {
+                console.error("Giriş Hatası:", e);
+                updateStatus("Hata: " + e.code, "bg-red-500");
+                showToast("Bağlantı Hatası: " + e.code);
             }
-        });
+        }
 
         async function save() {
             if (!isInitialized) return;
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mainState');
             try {
                 await setDoc(docRef, state);
                 showToast("Bulut Güncellendi");
             } catch (e) {
-                showToast("Kayıt Hatası!");
+                console.error("Kayıt Hatası:", e);
+                showToast("Kayıt Başarısız!");
             }
         }
 
         function render() {
             const format = (v, c) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: c, minimumFractionDigits: 0 }).format(v);
             const createItem = (p, t, n, v, c) => `
-                <div onclick="openEdit('${p}','${t}','${n}',${v})" class="bg-white border border-slate-100 p-3 rounded-2xl hover:border-blue-200 cursor-pointer transition-all active:scale-95">
+                <div onclick="openEdit('${p}','${t}','${n}',${v})" class="bg-white border border-slate-100 p-3 rounded-2xl hover:border-blue-200 cursor-pointer transition-all active:scale-95 shadow-sm">
                     <p class="text-[9px] font-black text-slate-400 uppercase truncate mb-1">${n}</p>
                     <p class="font-bold text-slate-800 text-sm">${format(v, c)}</p>
                 </div>`;
 
             let aT = 0, aU = 0, bT = 0, bU = 0;
             
-            document.getElementById('aydin-banks').innerHTML = Object.entries(state.aydin.banks).map(([n,v]) => { aT += v; return createItem('aydin','banks',n,v,'TRY')}).join('');
-            document.getElementById('aydin-crypto').innerHTML = Object.entries(state.aydin.crypto).map(([n,v]) => { aU += v; return createItem('aydin','crypto',n,v,'USD')}).join('');
-            document.getElementById('berna-banks').innerHTML = Object.entries(state.berna.banks).map(([n,v]) => { bT += v; return createItem('berna','banks',n,v,'TRY')}).join('');
-            document.getElementById('berna-crypto').innerHTML = Object.entries(state.berna.crypto).map(([n,v]) => { bU += v; return createItem('berna','crypto',n,v,'USD')}).join('');
+            // Veri gelmezse boş şablon gösterilmesi için kontrol
+            const aBanks = state.aydin?.banks || defaultState.aydin.banks;
+            const aCrypto = state.aydin?.crypto || defaultState.aydin.crypto;
+            const bBanks = state.berna?.banks || defaultState.berna.banks;
+            const bCrypto = state.berna?.crypto || defaultState.berna.crypto;
+
+            document.getElementById('aydin-banks').innerHTML = Object.entries(aBanks).map(([n,v]) => { aT += v; return createItem('aydin','banks',n,v,'TRY')}).join('');
+            document.getElementById('aydin-crypto').innerHTML = Object.entries(aCrypto).map(([n,v]) => { aU += v; return createItem('aydin','crypto',n,v,'USD')}).join('');
+            document.getElementById('berna-banks').innerHTML = Object.entries(bBanks).map(([n,v]) => { bT += v; return createItem('berna','banks',n,v,'TRY')}).join('');
+            document.getElementById('berna-crypto').innerHTML = Object.entries(bCrypto).map(([n,v]) => { bU += v; return createItem('berna','crypto',n,v,'USD')}).join('');
             
             const aTotal = aT + (aU * usdRate);
             const bTotal = bT + (bU * usdRate);
@@ -331,12 +346,13 @@
         }
 
         function renderHistory() {
-            document.getElementById('history-list').innerHTML = (state.history || []).slice(0, 20).map(h => `
+            const history = state.history || [];
+            document.getElementById('history-list').innerHTML = history.slice(0, 20).map(h => `
                 <tr class="hover:bg-slate-50/50">
-                    <td class="px-6 py-4 text-[10px] text-slate-400">${h.date}</td>
+                    <td class="px-6 py-4 text-[10px] text-slate-400 whitespace-nowrap">${h.date}</td>
                     <td class="px-6 py-4 font-bold capitalize">${h.person}</td>
                     <td class="px-6 py-4 font-semibold text-blue-600">${h.type}</td>
-                    <td class="px-6 py-4 text-right text-slate-500">${h.detail}</td>
+                    <td class="px-6 py-4 text-right text-slate-500 text-xs">${h.detail}</td>
                 </tr>`).join('');
         }
 
@@ -354,8 +370,9 @@
             const oldVal = state[activeEdit.p][activeEdit.t][activeEdit.n];
             if (val === oldVal) { closeEditModal(); return; }
             state[activeEdit.p][activeEdit.t][activeEdit.n] = val;
+            if (!state.history) state.history = [];
             state.history.unshift({ 
-                date: new Date().toLocaleString('tr-TR'), 
+                date: new Date().toLocaleString('tr-TR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}), 
                 person: activeEdit.p, 
                 type: 'Düzenleme', 
                 detail: `${activeEdit.n}: ${oldVal} ➔ ${val}` 
@@ -370,14 +387,20 @@
             const type = document.getElementById('t-type').value;
             const src = document.getElementById('t-source').value;
             const trg = document.getElementById('t-target').value;
-            const amt = parseFloat(document.getElementById('t-amount').value);
-            const amtIn = parseFloat(document.getElementById('t-amount-in').value);
+            const amt = parseFloat(document.getElementById('t-amount').value) || 0;
+            const amtIn = parseFloat(document.getElementById('t-amount-in').value) || 0;
 
             if (type === 'bank_to_crypto') { state[p].banks[src] -= amt; state[p].crypto[trg] += amtIn; } 
             else if (type === 'crypto_to_crypto') { state[p].crypto[src] -= amt; state[p].crypto[trg] += amtIn; } 
             else { state[p].banks[src] -= amt; state[p].banks[trg] += amtIn; }
 
-            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), person: p, type: 'Transfer', detail: `${src} ➔ ${trg} (${amt})` });
+            if (!state.history) state.history = [];
+            state.history.unshift({ 
+                date: new Date().toLocaleString('tr-TR', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}), 
+                person: p, 
+                type: 'Transfer', 
+                detail: `${src} ➔ ${trg} (${amt})` 
+            });
             save();
             switchTab('dashboard');
             e.target.reset();
@@ -389,8 +412,10 @@
             const src = document.getElementById('t-source');
             const trg = document.getElementById('t-target');
             src.innerHTML = ''; trg.innerHTML = '';
-            const banks = Object.keys(state[p].banks);
-            const cryptos = Object.keys(state[p].crypto);
+            
+            const banks = Object.keys(state[p].banks || {});
+            const cryptos = Object.keys(state[p].crypto || {});
+            
             if (type === 'bank_to_crypto') { banks.forEach(b => src.add(new Option(b, b))); cryptos.forEach(c => trg.add(new Option(c, c))); } 
             else if (type === 'crypto_to_crypto') { cryptos.forEach(c => src.add(new Option(c, c))); cryptos.forEach(c => trg.add(new Option(c, c))); } 
             else { banks.forEach(b => src.add(new Option(b, b))); banks.forEach(b => trg.add(new Option(b, b))); }
@@ -438,6 +463,7 @@
 
         fetchRate();
         setInterval(fetchRate, 60000);
+        startSync();
         switchTab('dashboard');
     </script>
 </body>
