@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KriptoTakip v1.4 Pro</title>
+    <title>KriptoTakip v1.4.1 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -42,7 +42,7 @@
                     <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4</span></h1>
+                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4.1</span></h1>
                     <div id="sync-indicator" class="flex items-center gap-1.5">
                         <div id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-orange-500 loading-pulse"></div>
                         <span id="sync-status" class="text-[10px] font-bold text-slate-500 uppercase">Yükleniyor...</span>
@@ -249,11 +249,13 @@
             <h4 class="text-center text-[10px] font-black text-orange-500 uppercase mb-6 tracking-[0.2em]">MANUEL BLOKAJ TANIMLA</h4>
             <div class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
-                    <select id="mb-person" class="p-4 dark-input rounded-xl font-bold">
+                    <select id="mb-person" onchange="updateManualBlockBorsaList()" class="p-4 dark-input rounded-xl font-bold">
                         <option value="aydin">Aydın</option>
                         <option value="berna">Berna</option>
                     </select>
-                    <input type="text" id="mb-name" placeholder="Borsa/Neden" class="p-4 dark-input rounded-xl font-bold">
+                    <select id="mb-name" class="p-4 dark-input rounded-xl font-bold appearance-none">
+                        <!-- JS ile dolacak -->
+                    </select>
                 </div>
                 <input type="number" id="mb-amount" placeholder="Miktar ($)" class="w-full p-4 dark-input rounded-xl font-bold">
                 <div class="space-y-1">
@@ -342,7 +344,8 @@
             let aT = 0, aU = 0, bT = 0, bU = 0;
             const updateUI = (person, type, container) => {
                 let html = "";
-                Object.entries(state[person][type]).forEach(([n,v]) => {
+                const items = state[person][type] || {};
+                Object.entries(items).forEach(([n,v]) => {
                     if(type === 'banks') person === 'aydin' ? aT+=v : bT+=v;
                     else person === 'aydin' ? aU+=v : bU+=v;
                     html += card(person, type, n, v, type==='banks'?'TRY':'USD');
@@ -362,32 +365,34 @@
             renderBlocks();
             renderHistory();
             updateTransferForm();
+            updateManualBlockBorsaList();
             lucide.createIcons();
         }
 
-        // Countdown Logic
         function startCountdownLoop() {
             if(countdownTimer) clearInterval(countdownTimer);
             countdownTimer = setInterval(() => {
                 const now = new Date().getTime();
-                state.blocks.forEach(b => {
+                (state.blocks || []).forEach(b => {
                     const target = new Date(b.endDate).getTime();
                     const diff = target - now;
                     const el = document.getElementById(`timer-${b.id}`);
                     if(el) {
+                        const progressEl = el.closest('.relative').querySelector('.progress-bar');
                         if(diff <= 0) {
                             el.innerHTML = `<span class="text-green-500 font-black">SERBEST KALDI</span>`;
-                            el.parentElement.querySelector('.progress-bar').style.width = "100%";
-                            el.parentElement.querySelector('.progress-bar').classList.replace('bg-orange-500', 'bg-green-500');
+                            if(progressEl) {
+                                progressEl.style.width = "100%";
+                                progressEl.classList.replace('bg-orange-500', 'bg-green-500');
+                            }
                         } else {
                             const h = Math.floor(diff / (1000 * 60 * 60));
                             const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                             const s = Math.floor((diff % (1000 * 60)) / 1000);
                             el.innerText = `${h}s ${m}d ${s}sn`;
-                            // Progress calculation (based on 48h default or custom)
                             const total = b.totalDuration || (48 * 60 * 60 * 1000);
                             const currentProgress = Math.min(100, Math.max(0, 100 - (diff / total * 100)));
-                            el.parentElement.querySelector('.progress-bar').style.width = `${currentProgress}%`;
+                            if(progressEl) progressEl.style.width = `${currentProgress}%`;
                         }
                     }
                 });
@@ -400,7 +405,7 @@
                 <div class="bg-[#1e293b] p-5 rounded-[24px] border border-slate-700 shadow-xl overflow-hidden relative">
                     <div class="flex justify-between items-start mb-4">
                         <div>
-                            <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${b.person} - ${b.target}</p>
+                            <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${b.person.toUpperCase()} - ${b.target}</p>
                             <p class="text-2xl font-black text-white">${b.amount} $</p>
                         </div>
                         <button onclick="removeBlock(${b.id})" class="p-2 text-slate-500 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
@@ -450,8 +455,20 @@
         };
         window.closeAddBankModal = () => document.getElementById('add-bank-modal').classList.add('hidden');
 
-        window.openManualBlockModal = () => document.getElementById('manual-block-modal').classList.remove('hidden');
+        window.openManualBlockModal = () => {
+            document.getElementById('manual-block-modal').classList.remove('hidden');
+            updateManualBlockBorsaList();
+        };
         window.closeManualBlockModal = () => document.getElementById('manual-block-modal').classList.add('hidden');
+
+        window.updateManualBlockBorsaList = () => {
+            const person = document.getElementById('mb-person').value;
+            const borsaSelect = document.getElementById('mb-name');
+            if(!borsaSelect) return;
+            borsaSelect.innerHTML = "";
+            const cryptos = Object.keys(state[person].crypto || {});
+            cryptos.forEach(c => borsaSelect.add(new Option(c, c)));
+        };
 
         // CRUD Operations
         window.saveEdit = async () => {
@@ -466,6 +483,7 @@
             const name = document.getElementById('new-bank-name').value;
             const type = document.getElementById('new-bank-type').value;
             if(!name) return;
+            if(!state[activeAddBankPerson][type]) state[activeAddBankPerson][type] = {};
             state[activeAddBankPerson][type][name] = 0;
             state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Yeni varlık eklendi: ${name}`, user: activeAddBankPerson });
             await saveData();
@@ -476,19 +494,30 @@
             const p = document.getElementById('mb-person').value;
             const name = document.getElementById('mb-name').value;
             const amount = parseFloat(document.getElementById('mb-amount').value) || 0;
-            const endDate = document.getElementById('mb-date').value;
-            if(!name || !endDate) return;
+            const endDateInput = document.getElementById('mb-date').value;
+            
+            if(!name || !endDateInput || amount <= 0) {
+                alert("Lütfen tüm alanları geçerli şekilde doldurun.");
+                return;
+            }
 
             const now = new Date().getTime();
-            const target = new Date(endDate).getTime();
+            const target = new Date(endDateInput).getTime();
             
+            if(target <= now) {
+                alert("Bitiş tarihi geçmiş bir zaman olamaz.");
+                return;
+            }
+
+            if(!state.blocks) state.blocks = [];
+
             state.blocks.push({
                 id: Date.now(),
                 person: p,
                 target: name,
                 amount: amount,
-                endDate: endDate,
-                totalDuration: target - now // Bu veri progress bar'ın doğru çalışması için lazım
+                endDate: endDateInput,
+                totalDuration: target - now
             });
 
             state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Manuel blokaj eklendi: ${name} (${amount}$)`, user: p });
@@ -507,9 +536,9 @@
 
             if (type === 'bank_to_crypto') {
                 state[p].banks[src] -= a1; state[p].crypto[trg] += a2;
-                // Otomatik 48 saatlik blokaj
                 const targetDate = new Date();
                 targetDate.setHours(targetDate.getHours() + 48);
+                if(!state.blocks) state.blocks = [];
                 state.blocks.push({ 
                     id: Date.now(), 
                     person: p, 
@@ -565,8 +594,8 @@
             const trg = document.getElementById('t-target');
             if(!src || !trg) return;
             src.innerHTML = ""; trg.innerHTML = "";
-            const banks = Object.keys(state[p].banks);
-            const crypto = Object.keys(state[p].crypto);
+            const banks = Object.keys(state[p].banks || {});
+            const crypto = Object.keys(state[p].crypto || {});
             if (type === 'bank_to_crypto') {
                 banks.forEach(b => src.add(new Option(b, b)));
                 crypto.forEach(c => trg.add(new Option(c, c)));
