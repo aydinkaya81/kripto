@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KriptoTakip v1.4.3 Pro</title>
+    <title>KriptoTakip v1.4.4 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -42,7 +42,7 @@
                     <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4.3</span></h1>
+                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4.4</span></h1>
                     <div id="sync-indicator" class="flex items-center gap-1.5">
                         <div id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-orange-500 loading-pulse"></div>
                         <span id="sync-status" class="text-[10px] font-bold text-slate-500 uppercase">Yükleniyor...</span>
@@ -50,14 +50,19 @@
                 </div>
             </div>
             
-            <div class="flex items-center gap-6">
-                <div class="hidden md:block text-right border-r pr-6 border-slate-700">
+            <div class="flex items-center gap-8">
+                <div class="hidden lg:block text-right border-r pr-6 border-slate-700">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Canlı USDT/TRY</p>
                     <p id="live-rate-badge" class="font-black text-blue-400">--.-- ₺</p>
                 </div>
-                <div class="text-right">
+                <div class="text-right flex flex-col items-end">
                     <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Net Varlık Değeri</p>
-                    <p id="header-total-value" class="font-black text-2xl text-white tracking-tighter">0 ₺</p>
+                    <div class="flex items-baseline gap-2">
+                        <p id="header-total-value" class="font-black text-2xl text-white tracking-tighter">0 ₺</p>
+                        <span id="change-indicator" class="text-[11px] font-black px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 hidden">
+                            +0%
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -81,9 +86,12 @@
                 </button>
             </div>
             
-            <div class="bg-[#0f172a] p-5 rounded-2xl border border-[#334155]">
-                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">Veri Yönetimi</p>
-                <button onclick="saveData()" class="w-full flex items-center justify-center gap-2 py-3.5 bg-slate-800 hover:bg-slate-700 rounded-xl text-[11px] font-black text-white transition-all">
+            <div class="bg-[#0f172a] p-5 rounded-2xl border border-[#334155] space-y-3">
+                <p class="text-[10px] font-bold text-slate-500 uppercase">Veri Yönetimi</p>
+                <button onclick="setReferenceBalance()" class="w-full flex items-center justify-center gap-2 py-3 bg-blue-600/10 hover:bg-blue-600/20 rounded-xl text-[10px] font-black text-blue-400 transition-all border border-blue-500/20">
+                    <i data-lucide="anchor" class="w-4 h-4"></i> GÜNÜ BAŞLAT
+                </button>
+                <button onclick="saveData()" class="w-full flex items-center justify-center gap-2 py-3 bg-slate-800 hover:bg-slate-700 rounded-xl text-[10px] font-black text-white transition-all">
                     <i data-lucide="cloud-upload" class="w-4 h-4 text-blue-500"></i> BULUTA YEDEKLE
                 </button>
             </div>
@@ -94,6 +102,18 @@
             
             <!-- TAB: Dashboard -->
             <div id="tab-dashboard" class="tab-content active max-w-7xl mx-auto space-y-6">
+                <!-- Change Stats Info -->
+                <div id="reference-info" class="hidden bg-blue-600/5 border border-blue-500/20 p-4 rounded-2xl flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="info" class="text-blue-500 w-5 h-5"></i>
+                        <p class="text-xs font-medium text-slate-400">
+                            Son referans bakiye: <span id="ref-val-label" class="text-white font-bold">0 ₺</span> 
+                            (<span id="ref-date-label" class="italic">--:--</span>)
+                        </p>
+                    </div>
+                    <button onclick="setReferenceBalance()" class="text-[10px] font-black text-blue-500 uppercase hover:underline">Sıfırla</button>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Aydın Card -->
                     <div class="dark-card rounded-[32px] overflow-hidden shadow-2xl relative">
@@ -265,7 +285,7 @@
 
     <!-- Manual Block -->
     <div id="manual-block-modal" class="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md hidden z-[100] flex items-center justify-center p-6" onclick="if(event.target === this) closeManualBlockModal()">
-        <div class="dark-card rounded-[40px] w-full max-w-md p-8 shadow-2xl">
+        <div class="dark-card rounded-[40px] w-full max-md p-8 shadow-2xl">
             <h4 class="text-center text-[10px] font-black text-orange-500 uppercase mb-6 tracking-[0.2em]">MANUEL BLOKAJ TANIMLA</h4>
             <div class="space-y-5">
                 <div class="grid grid-cols-2 gap-3">
@@ -320,11 +340,13 @@
             berna: { banks: { 'DenizBank': 0, 'Enpara': 0, 'Yapı Kredi': 0 }, crypto: { 'BtcTurk': 0, 'Binance Global': 0 } },
             ibo: { banks: { 'Ziraat': 0, 'Garanti': 0 }, crypto: { 'Binance TR': 0, 'OKX': 0 } },
             blocks: [],
-            history: []
+            history: [],
+            reference: { balance: 0, date: null }
         };
         let usdRate = 34.65;
         let currentUser = null;
         let countdownTimer = null;
+        let lastCalculatedTotal = 0;
 
         const initAuth = async () => {
             if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -346,8 +368,7 @@
             onSnapshot(docRef, (snap) => {
                 if (snap.exists()) {
                     state = snap.data();
-                    // Ensure ibo exists in state if loaded from old data
-                    if(!state.ibo) state.ibo = { banks: { 'Ziraat': 0, 'Garanti': 0 }, crypto: { 'Binance TR': 0, 'OKX': 0 } };
+                    if(!state.reference) state.reference = { balance: 0, date: null };
                     renderAll();
                     startCountdownLoop();
                 } else { saveData(); }
@@ -364,17 +385,18 @@
             } catch (e) { updateStatus("Kayıt Hatası", "bg-red-500"); }
         }
 
-        window.handleInputFocus = (el) => { if (parseFloat(el.value) === 0) el.value = ""; };
+        window.setReferenceBalance = async () => {
+            state.reference = {
+                balance: lastCalculatedTotal,
+                date: new Date().toISOString()
+            };
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Günü başlat: Referans bakiye ${fmt(lastCalculatedTotal, 'TRY')} olarak ayarlandı.`, user: 'sistem' });
+            await saveData();
+        };
 
-        function updateStatus(txt, cls, load = false) {
-            const st = document.getElementById('sync-status');
-            const sd = document.getElementById('sync-dot');
-            if(st) st.innerText = txt;
-            if(sd) sd.className = `w-1.5 h-1.5 rounded-full ${cls} ${load ? 'loading-pulse' : ''}`;
-        }
+        const fmt = (v, c) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(v);
 
         function renderAll() {
-            const fmt = (v, c) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(v);
             const card = (p, t, n, v, c) => `
                 <div onclick="openEditModal('${p}','${t}','${n}',${v})" class="bg-[#0f172a] p-3 rounded-xl border border-[#334155] hover:border-blue-500/40 cursor-pointer transition-all active:scale-95 group flex justify-between items-center">
                     <p class="text-[9px] font-black text-slate-500 uppercase tracking-tighter truncate group-hover:text-blue-400">${n}</p>
@@ -393,7 +415,8 @@
                     }
                     html += card(person, type, n, v, type==='banks'?'TRY':'USD');
                 });
-                document.getElementById(container).innerHTML = html;
+                const el = document.getElementById(container);
+                if(el) el.innerHTML = html;
             };
 
             updateUI('aydin', 'banks', 'aydin-banks-container');
@@ -407,8 +430,32 @@
             document.getElementById('berna-total').innerText = fmt(bT + (bU*usdRate), 'TRY');
             document.getElementById('ibo-total').innerText = fmt(iT + (iU*usdRate), 'TRY');
             
-            const grandTotal = (aT+aU*usdRate) + (bT+bU*usdRate) + (iT+iU*usdRate);
-            document.getElementById('header-total-value').innerText = fmt(grandTotal, 'TRY');
+            lastCalculatedTotal = (aT+aU*usdRate) + (bT+bU*usdRate) + (iT+iU*usdRate);
+            document.getElementById('header-total-value').innerText = fmt(lastCalculatedTotal, 'TRY');
+
+            // Değişim Hesaplama
+            const indicator = document.getElementById('change-indicator');
+            const refInfo = document.getElementById('reference-info');
+            if(state.reference && state.reference.balance > 0) {
+                const diff = lastCalculatedTotal - state.reference.balance;
+                const perc = (diff / state.reference.balance) * 100;
+                indicator.classList.remove('hidden');
+                refInfo.classList.remove('hidden');
+                
+                document.getElementById('ref-val-label').innerText = fmt(state.reference.balance, 'TRY');
+                document.getElementById('ref-date-label').innerText = new Date(state.reference.date).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'});
+
+                if(diff >= 0) {
+                    indicator.className = "text-[11px] font-black px-2 py-0.5 rounded-md bg-green-500/10 text-green-500";
+                    indicator.innerText = `+${perc.toFixed(1)}% (+${fmt(diff, 'TRY')})`;
+                } else {
+                    indicator.className = "text-[11px] font-black px-2 py-0.5 rounded-md bg-red-500/10 text-red-500";
+                    indicator.innerText = `${perc.toFixed(1)}% (${fmt(diff, 'TRY')})`;
+                }
+            } else {
+                indicator.classList.add('hidden');
+                refInfo.classList.add('hidden');
+            }
 
             renderBlocks();
             renderHistory();
@@ -449,6 +496,7 @@
 
         function renderBlocks() {
             const container = document.getElementById('blocks-container');
+            if(!container) return;
             container.innerHTML = (state.blocks || []).map(b => `
                 <div class="bg-[#1e293b] p-5 rounded-[24px] border border-slate-700 shadow-xl overflow-hidden relative">
                     <div class="flex justify-between items-start mb-4">
@@ -477,21 +525,22 @@
         }
 
         function renderHistory() {
-            document.getElementById('history-list').innerHTML = (state.history || []).slice(0, 15).map(h => `
+            const list = document.getElementById('history-list');
+            if(!list) return;
+            list.innerHTML = (state.history || []).slice(0, 15).map(h => `
                 <div class="p-5 flex justify-between items-center hover:bg-[#1e293b] transition-all">
                     <div>
                         <p class="text-sm font-bold text-slate-200">${h.msg}</p>
                         <p class="text-[10px] text-slate-500 font-bold">${h.date}</p>
                     </div>
                     <span class="text-[9px] font-black px-3 py-1.5 rounded-lg uppercase 
-                        ${h.user === 'aydin' ? 'bg-blue-600/20 text-blue-400' : h.user === 'berna' ? 'bg-purple-600/20 text-purple-400' : 'bg-emerald-600/20 text-emerald-400'}">
+                        ${h.user === 'aydin' ? 'bg-blue-600/20 text-blue-400' : h.user === 'berna' ? 'bg-purple-600/20 text-purple-400' : h.user === 'ibo' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-slate-700 text-slate-300'}">
                         ${h.user}
                     </span>
                 </div>
             `).join('');
         }
 
-        // Modals Management
         let activeEdit = null;
         window.openEditModal = (p, t, n, v) => {
             activeEdit = { p, t, n };
@@ -524,7 +573,6 @@
             cryptos.forEach(c => borsaSelect.add(new Option(c, c)));
         };
 
-        // Operations
         window.saveEdit = async () => {
             const val = parseFloat(document.getElementById('modal-input').value) || 0;
             state[activeEdit.p][activeEdit.t][activeEdit.n] = val;
@@ -550,25 +598,12 @@
             const amount = parseFloat(document.getElementById('mb-amount').value) || 0;
             const hours = parseInt(document.getElementById('mb-hours').value) || 0;
             const mins = parseInt(document.getElementById('mb-mins').value) || 0;
-            
-            if(!name || (hours <= 0 && mins <= 0) || amount <= 0) {
-                return;
-            }
-
+            if(!name || (hours <= 0 && mins <= 0) || amount <= 0) return;
             const now = new Date();
             const durationMs = (hours * 60 * 60 * 1000) + (mins * 60 * 1000);
             const endDate = new Date(now.getTime() + durationMs);
-
             if(!state.blocks) state.blocks = [];
-            state.blocks.push({
-                id: Date.now(),
-                person: p,
-                target: name,
-                amount: amount,
-                endDate: endDate.toISOString(),
-                totalDuration: durationMs
-            });
-
+            state.blocks.push({ id: Date.now(), person: p, target: name, amount: amount, endDate: endDate.toISOString(), totalDuration: durationMs });
             state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Manuel blokaj eklendi: ${name} (${amount}$)`, user: p });
             await saveData();
             closeManualBlockModal();
@@ -582,7 +617,6 @@
             const trg = document.getElementById('t-target').value;
             const a1 = parseFloat(document.getElementById('t-amount-1').value) || 0;
             const a2 = parseFloat(document.getElementById('t-amount-2').value) || 0;
-
             if (type === 'bank_to_crypto') {
                 state[p].banks[src] -= a1; state[p].crypto[trg] += a2;
                 const duration = 48 * 60 * 60 * 1000;
@@ -596,7 +630,6 @@
             } else {
                 state[p].banks[src] -= a1; state[p].banks[trg] += a2;
             }
-
             state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${src} -> ${trg} aktarımı yapıldı`, user: p });
             await saveData();
             switchTab('dashboard');
@@ -654,6 +687,14 @@
             }
         };
 
+        function updateStatus(txt, cls, load = false) {
+            const st = document.getElementById('sync-status');
+            const sd = document.getElementById('sync-dot');
+            if(st) st.innerText = txt;
+            if(sd) sd.className = `w-1.5 h-1.5 rounded-full ${cls} ${load ? 'loading-pulse' : ''}`;
+        }
+
+        window.handleInputFocus = (el) => { if (parseFloat(el.value) === 0) el.value = ""; };
         window.saveData = saveData;
         setInterval(updateRate, 60000);
         updateRate();
