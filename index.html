@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KriptoTakip v1.4.1 Pro</title>
+    <title>KriptoTakip v1.4.2 Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -42,7 +42,7 @@
                     <i data-lucide="shield-check" class="text-white w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4.1</span></h1>
+                    <h1 class="text-lg font-black tracking-tight">KriptoTakip <span class="text-blue-500">v1.4.2</span></h1>
                     <div id="sync-indicator" class="flex items-center gap-1.5">
                         <div id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-orange-500 loading-pulse"></div>
                         <span id="sync-status" class="text-[10px] font-bold text-slate-500 uppercase">Yükleniyor...</span>
@@ -247,22 +247,41 @@
     <div id="manual-block-modal" class="fixed inset-0 bg-[#0f172a]/90 backdrop-blur-md hidden z-[100] flex items-center justify-center p-6" onclick="if(event.target === this) closeManualBlockModal()">
         <div class="dark-card rounded-[40px] w-full max-w-md p-8 shadow-2xl">
             <h4 class="text-center text-[10px] font-black text-orange-500 uppercase mb-6 tracking-[0.2em]">MANUEL BLOKAJ TANIMLA</h4>
-            <div class="space-y-4">
+            <div class="space-y-5">
                 <div class="grid grid-cols-2 gap-3">
-                    <select id="mb-person" onchange="updateManualBlockBorsaList()" class="p-4 dark-input rounded-xl font-bold">
-                        <option value="aydin">Aydın</option>
-                        <option value="berna">Berna</option>
-                    </select>
-                    <select id="mb-name" class="p-4 dark-input rounded-xl font-bold appearance-none">
-                        <!-- JS ile dolacak -->
-                    </select>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Kişi</label>
+                        <select id="mb-person" onchange="updateManualBlockBorsaList()" class="w-full p-4 dark-input rounded-xl font-bold">
+                            <option value="aydin">Aydın</option>
+                            <option value="berna">Berna</option>
+                        </select>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Borsa</label>
+                        <select id="mb-name" class="w-full p-4 dark-input rounded-xl font-bold appearance-none"></select>
+                    </div>
                 </div>
-                <input type="number" id="mb-amount" placeholder="Miktar ($)" class="w-full p-4 dark-input rounded-xl font-bold">
+
                 <div class="space-y-1">
-                    <label class="text-[10px] font-black text-slate-500 uppercase ml-1">Serbest Kalma Tarihi ve Saati</label>
-                    <input type="datetime-local" id="mb-date" class="w-full p-4 dark-input rounded-xl font-bold">
+                    <label class="text-[9px] font-black text-slate-500 uppercase ml-1">Miktar ($)</label>
+                    <input type="number" id="mb-amount" placeholder="0.00" class="w-full p-4 dark-input rounded-xl font-bold">
                 </div>
-                <button onclick="addManualBlock()" class="w-full py-4 bg-orange-600 text-white rounded-xl font-black shadow-lg">BLOKAJI BAŞLAT</button>
+
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-blue-500 uppercase ml-1">Kalan Süre (Ne kadar blokeli kalacak?)</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="relative">
+                            <input type="number" id="mb-hours" value="48" class="w-full p-4 dark-input rounded-xl font-bold pr-12 text-center">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500">SAAT</span>
+                        </div>
+                        <div class="relative">
+                            <input type="number" id="mb-mins" value="0" class="w-full p-4 dark-input rounded-xl font-bold pr-12 text-center">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500">DAK</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="addManualBlock()" class="w-full py-5 bg-orange-600 hover:bg-orange-700 text-white rounded-2xl font-black shadow-lg shadow-orange-900/20 active:scale-95 transition-all">BLOKAJI BAŞLAT</button>
             </div>
         </div>
     </div>
@@ -408,14 +427,17 @@
                             <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">${b.person.toUpperCase()} - ${b.target}</p>
                             <p class="text-2xl font-black text-white">${b.amount} $</p>
                         </div>
-                        <button onclick="removeBlock(${b.id})" class="p-2 text-slate-500 hover:text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        <button onclick="removeBlock(${b.id})" class="p-2 text-slate-500 hover:text-red-500 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
                     </div>
                     <div class="flex justify-between items-end">
                         <div class="space-y-1">
                             <p class="text-[9px] font-bold text-slate-500 uppercase">Kalan Süre</p>
                             <p id="timer-${b.id}" class="text-xs font-black text-orange-400 tabular-nums">Hesaplanıyor...</p>
                         </div>
-                        <p class="text-[9px] font-bold text-slate-600">${new Date(b.endDate).toLocaleString('tr-TR')}</p>
+                        <div class="text-right">
+                            <p class="text-[9px] font-bold text-slate-600 uppercase">Serbest Tarih</p>
+                            <p class="text-[10px] font-bold text-slate-400 tracking-tighter">${new Date(b.endDate).toLocaleString('tr-TR')}</p>
+                        </div>
                     </div>
                     <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-800">
                         <div class="progress-bar h-full bg-orange-500 transition-all duration-1000" style="width: 0%"></div>
@@ -474,7 +496,7 @@
         window.saveEdit = async () => {
             const val = parseFloat(document.getElementById('modal-input').value) || 0;
             state[activeEdit.p][activeEdit.t][activeEdit.n] = val;
-            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${activeEdit.n} güncellendi: ${val}`, user: activeEdit.p });
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${activeEdit.n} bakiye güncellendi: ${val}`, user: activeEdit.p });
             await saveData();
             closeEditModal();
         };
@@ -494,20 +516,17 @@
             const p = document.getElementById('mb-person').value;
             const name = document.getElementById('mb-name').value;
             const amount = parseFloat(document.getElementById('mb-amount').value) || 0;
-            const endDateInput = document.getElementById('mb-date').value;
+            const hours = parseInt(document.getElementById('mb-hours').value) || 0;
+            const mins = parseInt(document.getElementById('mb-mins').value) || 0;
             
-            if(!name || !endDateInput || amount <= 0) {
-                alert("Lütfen tüm alanları geçerli şekilde doldurun.");
+            if(!name || (hours <= 0 && mins <= 0) || amount <= 0) {
+                alert("Lütfen tüm alanları (miktar ve süre) geçerli şekilde doldurun.");
                 return;
             }
 
-            const now = new Date().getTime();
-            const target = new Date(endDateInput).getTime();
-            
-            if(target <= now) {
-                alert("Bitiş tarihi geçmiş bir zaman olamaz.");
-                return;
-            }
+            const now = new Date();
+            const durationMs = (hours * 60 * 60 * 1000) + (mins * 60 * 1000);
+            const endDate = new Date(now.getTime() + durationMs);
 
             if(!state.blocks) state.blocks = [];
 
@@ -516,11 +535,11 @@
                 person: p,
                 target: name,
                 amount: amount,
-                endDate: endDateInput,
-                totalDuration: target - now
+                endDate: endDate.toISOString(),
+                totalDuration: durationMs
             });
 
-            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Manuel blokaj eklendi: ${name} (${amount}$)`, user: p });
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `Manuel blokaj eklendi: ${name} (${amount}$) - Süre: ${hours}S ${mins}D`, user: p });
             await saveData();
             closeManualBlockModal();
         };
@@ -536,8 +555,8 @@
 
             if (type === 'bank_to_crypto') {
                 state[p].banks[src] -= a1; state[p].crypto[trg] += a2;
-                const targetDate = new Date();
-                targetDate.setHours(targetDate.getHours() + 48);
+                const duration = 48 * 60 * 60 * 1000;
+                const targetDate = new Date(Date.now() + duration);
                 if(!state.blocks) state.blocks = [];
                 state.blocks.push({ 
                     id: Date.now(), 
@@ -545,7 +564,7 @@
                     target: trg, 
                     amount: a2, 
                     endDate: targetDate.toISOString(),
-                    totalDuration: 48 * 60 * 60 * 1000
+                    totalDuration: duration
                 });
             } else if (type === 'crypto_to_crypto') {
                 state[p].crypto[src] -= a1; state[p].crypto[trg] += a2;
@@ -555,14 +574,14 @@
                 state[p].banks[src] -= a1; state[p].banks[trg] += a2;
             }
 
-            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${src} -> ${trg} aktarımı yapıldı`, user: p });
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${src} -> ${trg} aktarımı yapıldı (${a2})`, user: p });
             await saveData();
             switchTab('dashboard');
             e.target.reset();
         };
 
         window.removeBlock = async (id) => {
-            state.blocks = state.blocks.filter(b => b.id !== id);
+            state.blocks = (state.blocks || []).filter(b => b.id !== id);
             await saveData();
         };
 
@@ -582,7 +601,8 @@
                 const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
                 const d = await res.json();
                 usdRate = parseFloat(d.price);
-                document.getElementById('live-rate-badge').innerText = `${usdRate.toFixed(2)} ₺`;
+                const badge = document.getElementById('live-rate-badge');
+                if(badge) badge.innerText = `${usdRate.toFixed(2)} ₺`;
                 renderAll();
             } catch (e) {}
         };
