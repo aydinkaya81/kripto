@@ -3,356 +3,458 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KayaFinans Pro v2.8</title>
+    <title>KriptoTakip v1.3 Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --ios-blue: #007AFF; --ios-bg: #F2F2F7; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--ios-bg); -webkit-tap-highlight-color: transparent; overflow: hidden; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: ios-fade 0.4s ease; }
-        @keyframes ios-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .ios-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(20px); border-radius: 24px; border: 0.5px solid rgba(0,0,0,0.05); }
-        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px); }
+        .tab-content.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-active { background-color: #eff6ff; color: #2563eb; border-right: 4px solid #2563eb; }
+        .loading-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .mobile-nav { display: flex; }
+            .nav-active { background-color: transparent; border-right: none; color: #2563eb; }
+        }
     </style>
 </head>
-<body class="text-slate-900 h-screen flex flex-col">
+<body class="text-slate-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Üst Bar -->
+    <header class="bg-white border-b border-slate-200 z-50">
+        <div class="px-6 h-20 flex items-center justify-between max-w-[1600px] mx-auto w-full">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-2 rounded-xl shadow-lg shadow-blue-200">
+                    <i data-lucide="wallet-minimal" class="text-white w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">KriptoTakip <span class="text-blue-600">v1.3</span></h1>
+                    <div id="sync-indicator" class="flex items-center gap-1.5">
+                        <div id="sync-dot" class="w-1.5 h-1.5 rounded-full bg-orange-400 loading-pulse"></div>
+                        <span id="sync-status" class="text-[10px] font-medium text-slate-400 uppercase">Başlatılıyor...</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6">
+                <div class="hidden md:block text-right border-r pr-6 border-slate-100">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Canlı Kur</p>
+                    <p id="live-rate-badge" class="font-bold text-slate-900">34.xx ₺</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Net Varlık</p>
+                    <p id="header-total-value" class="font-black text-xl text-blue-600 tracking-tighter">0 ₺</p>
+                </div>
+            </div>
+        </div>
+    </header>
 
     <div class="flex flex-1 overflow-hidden">
-        <!-- Masaüstü Sidebar -->
-        <aside class="w-80 bg-white border-r border-slate-200 hidden lg:flex flex-col p-8 gap-8">
-            <div class="flex items-center gap-4">
-                <div class="w-12 h-12 bg-slate-900 rounded-2xl flex items-center justify-center shadow-xl text-white">
-                    <i data-lucide="wallet" class="w-6 h-6"></i>
-                </div>
-                <h1 class="text-xl font-extrabold tracking-tight">KayaFinans</h1>
+        <!-- Sidebar -->
+        <aside class="sidebar w-72 bg-white border-r border-slate-100 p-6 flex flex-col justify-between">
+            <div class="space-y-2">
+                <button onclick="switchTab('dashboard')" id="btn-dashboard" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all hover:bg-slate-50 nav-active tab-btn" data-tab="dashboard">
+                    <i data-lucide="layout-grid" class="w-5 h-5"></i> Özet Paneli
+                </button>
+                <button onclick="switchTab('transfer')" id="btn-transfer" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all hover:bg-slate-50 text-slate-500 tab-btn" data-tab="transfer">
+                    <i data-lucide="arrow-up-right" class="w-5 h-5"></i> Yeni İşlem
+                </button>
+                <button onclick="switchTab('blocks')" id="btn-blocks" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all hover:bg-slate-50 text-slate-500 tab-btn" data-tab="blocks">
+                    <i data-lucide="timer" class="w-5 h-5"></i> Blokajlar
+                </button>
+                <button onclick="switchTab('history')" id="btn-history" class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-semibold transition-all hover:bg-slate-50 text-slate-500 tab-btn" data-tab="history">
+                    <i data-lucide="scroll-text" class="w-5 h-5"></i> Kayıtlar
+                </button>
             </div>
-            <nav class="flex flex-col gap-2">
-                <button onclick="switchTab('dashboard')" class="flex items-center gap-4 p-4 rounded-2xl font-bold text-slate-900 bg-slate-100" id="btn-dashboard">
-                    <i data-lucide="layout-grid" class="w-5 h-5"></i> Özet
+            
+            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Sistem</p>
+                <button onclick="saveData()" class="w-full flex items-center justify-center gap-2 py-3 bg-white border border-slate-200 rounded-xl text-xs font-bold shadow-sm active:scale-95 transition-all">
+                    <i data-lucide="cloud-upload" class="w-4 h-4 text-blue-500"></i> Buluta Yedekle
                 </button>
-                <button onclick="switchTab('transfer')" class="flex items-center gap-4 p-4 rounded-2xl font-bold text-slate-400" id="btn-transfer">
-                    <i data-lucide="send" class="w-5 h-5"></i> İşlem Yap
-                </button>
-                <button onclick="switchTab('history')" class="flex items-center gap-4 p-4 rounded-2xl font-bold text-slate-400" id="btn-history">
-                    <i data-lucide="clock" class="w-5 h-5"></i> Geçmiş
-                </button>
-            </nav>
-            <div class="mt-auto ios-card p-6 shadow-sm border border-slate-100">
-                <div class="flex items-center gap-2 mb-2">
-                    <div id="status-dot" class="w-2 h-2 rounded-full bg-green-500"></div>
-                    <span id="status-text" class="text-[10px] font-bold text-slate-500 uppercase">Sistem Aktif</span>
-                </div>
-                <p id="last-update" class="text-[9px] text-slate-400">Veri senkronize edildi</p>
             </div>
         </aside>
 
-        <!-- Ana Panel -->
-        <main class="flex-1 overflow-y-auto relative pb-32 lg:pb-12">
-            <!-- Mobil Header (İlk Tasarım Stili) -->
-            <div class="lg:hidden p-8 pt-16 flex justify-between items-end bg-white/50 border-b border-slate-100">
-                <div>
-                    <h2 class="text-3xl font-black tracking-tighter">Varlıklar</h2>
-                    <div id="status-mobile" class="text-[9px] font-black text-green-600 mt-1 uppercase">● SENKRONİZE</div>
-                </div>
-                <div class="text-right">
-                    <p id="total-balance" class="text-2xl font-black text-slate-900">0 ₺</p>
-                    <p id="usd-rate-text" class="text-[10px] font-bold text-blue-500 tracking-tighter">USDT: ...</p>
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-10 pb-32">
+            <div id="tab-dashboard" class="tab-content active max-w-5xl mx-auto space-y-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Aydın Card -->
+                    <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="p-8 border-b border-slate-50 flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-xl">Aydın Kaya</h3>
+                                <p class="text-xs text-slate-400 font-medium">Bireysel Portföy</p>
+                            </div>
+                            <span id="aydin-total" class="bg-blue-600 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg shadow-blue-100">0 ₺</span>
+                        </div>
+                        <div class="p-8 space-y-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4">Bankalar (TRY)</label>
+                                <div class="grid grid-cols-2 gap-3" id="aydin-banks-container"></div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4 border-t pt-6">Kripto (USD)</label>
+                                <div class="grid grid-cols-2 gap-3" id="aydin-crypto-container"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Berna Card -->
+                    <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="p-8 border-b border-slate-50 flex justify-between items-center text-right">
+                            <span id="berna-total" class="bg-purple-600 text-white px-4 py-2 rounded-2xl text-sm font-bold shadow-lg shadow-purple-100">0 ₺</span>
+                            <div>
+                                <h3 class="font-bold text-xl">Berna Kaya</h3>
+                                <p class="text-xs text-slate-400 font-medium">Bireysel Portföy</p>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-6">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4 text-right">Bankalar (TRY)</label>
+                                <div class="grid grid-cols-2 gap-3" id="berna-banks-container"></div>
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-4 border-t pt-6 text-right">Kripto (USD)</label>
+                                <div class="grid grid-cols-2 gap-3" id="berna-crypto-container"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-6 lg:p-12 max-w-6xl mx-auto space-y-8">
-                
-                <!-- DASHBOARD (KART TASARIMI) -->
-                <div id="tab-dashboard" class="tab-content active space-y-8">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <!-- Aydın Kaya (Koyu Tema) -->
-                        <div class="ios-card overflow-hidden shadow-2xl">
-                            <div class="p-8 bg-slate-900 text-white flex justify-between items-center">
-                                <div>
-                                    <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">Aydın Kaya</p>
-                                    <h3 class="text-2xl font-bold">Portföy Lideri</h3>
-                                </div>
-                                <div id="aydin-total" class="text-2xl font-black">0 ₺</div>
+            <div id="tab-transfer" class="tab-content max-w-2xl mx-auto">
+                <div class="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl">
+                    <h2 class="text-2xl font-bold mb-8">Hızlı İşlem Kaydı</h2>
+                    <form id="transfer-form" onsubmit="handleTransfer(event)" class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 ml-1 uppercase">İşlem Türü</label>
+                            <select id="t-type" onchange="updateTransferForm()" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl outline-none font-semibold transition-all">
+                                <option value="bank_to_crypto">Banka -> Kripto (48S Blokaj)</option>
+                                <option value="crypto_to_crypto">Kripto -> Kripto (Transfer)</option>
+                                <option value="p2p_sell">Kripto -> Banka (P2P Satış)</option>
+                                <option value="bank_to_bank">Banka -> Banka (EFT/Havale)</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Kişi</label>
+                            <select id="t-person" onchange="updateTransferForm()" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl outline-none font-semibold transition-all">
+                                <option value="aydin">Aydın Kaya</option>
+                                <option value="berna">Berna Kaya</option>
+                            </select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Kaynak</label>
+                                <select id="t-source" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl outline-none font-semibold"></select>
                             </div>
-                            <div class="p-6 space-y-6">
-                                <div>
-                                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 px-2">Banka Hesapları</h4>
-                                    <div id="aydin-banks" class="space-y-2"></div>
-                                </div>
-                                <div>
-                                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 px-2">Kripto Varlıklar</h4>
-                                    <div id="aydin-crypto" class="space-y-2"></div>
-                                </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Hedef</label>
+                                <select id="t-target" class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-blue-500 rounded-2xl outline-none font-semibold"></select>
                             </div>
                         </div>
-
-                        <!-- Berna Kaya (Mavi Tema) -->
-                        <div class="ios-card overflow-hidden shadow-2xl">
-                            <div class="p-8 bg-blue-600 text-white flex justify-between items-center">
-                                <div>
-                                    <p class="text-[10px] font-bold opacity-50 uppercase tracking-widest">Berna Kaya</p>
-                                    <h3 class="text-2xl font-bold">Portföy Ortağı</h3>
-                                </div>
-                                <div id="berna-total" class="text-2xl font-black">0 ₺</div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Çıkan Tutar</label>
+                                <input type="number" id="t-amount-1" placeholder="0.00" step="0.01" required class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-red-500 rounded-2xl outline-none font-bold">
                             </div>
-                            <div class="p-6 space-y-6">
-                                <div>
-                                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 px-2">Banka Hesapları</h4>
-                                    <div id="berna-banks" class="space-y-2"></div>
-                                </div>
-                                <div>
-                                    <h4 class="text-[10px] font-black text-slate-400 uppercase mb-3 px-2">Kripto Varlıklar</h4>
-                                    <div id="berna-crypto" class="space-y-2"></div>
-                                </div>
+                            <div class="space-y-2">
+                                <label class="text-xs font-bold text-slate-500 ml-1 uppercase">Giren Tutar</label>
+                                <input type="number" id="t-amount-2" placeholder="0.00" step="0.01" required class="w-full p-4 bg-slate-50 border-2 border-transparent focus:border-green-500 rounded-2xl outline-none font-bold text-green-600">
                             </div>
                         </div>
-                    </div>
+                        <button type="submit" class="w-full py-5 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-200 active:scale-95 transition-all">SİSTEME İŞLE</button>
+                    </form>
                 </div>
+            </div>
 
-                <!-- TRANSFER TAB -->
-                <div id="tab-transfer" class="tab-content">
-                    <div class="ios-card p-10 max-w-xl mx-auto shadow-2xl border border-white">
-                        <h3 class="text-2xl font-black mb-8 text-center">İşlem Girişi</h3>
-                        <form id="transfer-form" class="space-y-5">
-                            <div class="grid grid-cols-2 gap-4">
-                                <select id="tr-person" class="bg-slate-100 p-5 rounded-3xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
-                                    <option value="aydin">Aydın Kaya</option>
-                                    <option value="berna">Berna Kaya</option>
-                                </select>
-                                <select id="tr-type" class="bg-slate-100 p-5 rounded-3xl font-bold outline-none border-2 border-transparent focus:border-blue-500">
-                                    <option value="b2b">Nakit İşlem</option>
-                                    <option value="b2c">Kripto İşlem</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <input type="number" id="tr-out" placeholder="Çıkan (-)" class="bg-red-50 p-5 rounded-3xl font-bold text-center text-red-600 outline-none placeholder:text-red-200">
-                                <input type="number" id="tr-in" placeholder="Giren (+)" class="bg-green-50 p-5 rounded-3xl font-bold text-center text-green-600 outline-none placeholder:text-green-200">
-                            </div>
-                            <button type="submit" class="w-full bg-slate-900 text-white p-6 rounded-[30px] font-black shadow-xl hover:bg-black active:scale-95 transition-all">SİSTEME İŞLE</button>
-                        </form>
+            <div id="tab-blocks" class="tab-content max-w-4xl mx-auto space-y-6">
+                <h2 class="text-2xl font-bold">Bekleyen Blokajlar</h2>
+                <div id="blocks-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            </div>
+
+            <div id="tab-history" class="tab-content max-w-4xl mx-auto">
+                <div class="bg-white rounded-[32px] border border-slate-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-slate-50">
+                        <h2 class="text-xl font-bold">İşlem Geçmişi</h2>
                     </div>
+                    <div id="history-list" class="divide-y divide-slate-50"></div>
                 </div>
-
-                <!-- HISTORY TAB -->
-                <div id="tab-history" class="tab-content">
-                    <div class="ios-card overflow-hidden">
-                        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-white/50">
-                            <h3 class="font-bold uppercase text-[11px] tracking-widest text-slate-400">Son 20 İşlem</h3>
-                            <button onclick="clearLogs()" class="text-red-500 text-[10px] font-black uppercase">Geçmişi Sil</button>
-                        </div>
-                        <div id="history-list" class="divide-y divide-slate-50 bg-white"></div>
-                    </div>
-                </div>
-
             </div>
         </main>
-
-        <!-- Mobil Navigasyon -->
-        <nav class="lg:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-100 px-8 pb-10 pt-4 flex justify-around z-50">
-            <button onclick="switchTab('dashboard')" class="flex flex-col items-center gap-1 text-slate-900 nav-btn" data-tab="dashboard">
-                <i data-lucide="layout-grid" class="w-6 h-6"></i>
-                <span class="text-[9px] font-black uppercase">Özet</span>
-            </button>
-            <button onclick="switchTab('transfer')" class="flex flex-col items-center gap-1 text-slate-400 nav-btn" data-tab="transfer">
-                <i data-lucide="plus-circle" class="w-6 h-6"></i>
-                <span class="text-[9px] font-black uppercase">Ekle</span>
-            </button>
-            <button onclick="switchTab('history')" class="flex flex-col items-center gap-1 text-slate-400 nav-btn" data-tab="history">
-                <i data-lucide="clock" class="w-6 h-6"></i>
-                <span class="text-[9px] font-black uppercase">Kayıt</span>
-            </button>
-        </nav>
     </div>
 
-    <!-- Veri Düzenleme Modalı -->
-    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-md hidden z-[100] flex items-center justify-center p-6">
+    <!-- Mobile Nav -->
+    <nav class="mobile-nav hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 px-6 py-4 justify-around items-center z-50">
+        <button onclick="switchTab('dashboard')" class="p-2 tab-btn nav-active" data-tab="dashboard"><i data-lucide="layout-grid"></i></button>
+        <button onclick="switchTab('transfer')" class="p-2 tab-btn text-slate-400" data-tab="transfer"><i data-lucide="arrow-up-right"></i></button>
+        <button onclick="switchTab('blocks')" class="p-2 tab-btn text-slate-400" data-tab="blocks"><i data-lucide="timer"></i></button>
+        <button onclick="switchTab('history')" class="p-2 tab-btn text-slate-400" data-tab="history"><i data-lucide="scroll-text"></i></button>
+    </nav>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md hidden z-[100] flex items-center justify-center p-6">
         <div class="bg-white rounded-[40px] w-full max-w-xs p-10 shadow-2xl">
-            <h4 id="modal-title" class="text-center text-[11px] font-black text-slate-400 uppercase mb-4 tracking-widest">DÜZENLE</h4>
-            <div class="relative mb-8">
-                <input type="number" id="modal-input" 
-                       onclick="handleZeroClear(this)" 
-                       class="w-full text-center text-5xl font-black outline-none bg-slate-50 p-6 rounded-[30px] border-2 border-transparent focus:border-blue-500 transition-all">
-                <span id="modal-currency" class="absolute bottom-2 right-4 text-[10px] font-bold text-slate-300"></span>
-            </div>
-            <div class="flex flex-col gap-3">
-                <button onclick="saveModal()" class="w-full bg-slate-900 p-5 rounded-2xl font-black text-white shadow-xl active:scale-95 transition-all">GÜNCELLE</button>
-                <button onclick="closeModal()" class="w-full bg-slate-100 p-4 rounded-2xl font-bold text-slate-400">VAZGEÇ</button>
+            <h4 id="modal-title" class="text-center text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest">VERİ GÜNCELLE</h4>
+            <input type="number" id="modal-input" class="w-full text-center text-5xl font-bold outline-none bg-slate-50 p-6 rounded-3xl border-2 border-transparent focus:border-blue-500 mb-8">
+            <div class="space-y-3">
+                <button onclick="saveEdit()" class="w-full bg-blue-600 text-white py-5 rounded-2xl font-bold shadow-lg shadow-blue-100 active:scale-95 transition-all">KAYDET</button>
+                <button onclick="closeEditModal()" class="w-full py-4 text-slate-400 font-semibold">İPTAL</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBPFWe9FSkUBaiyaeBMhiXZm7g8QlfZzKQ",
-            authDomain: "kripto-ee5f6.firebaseapp.com",
-            projectId: "kripto-ee5f6",
-            storageBucket: "kripto-ee5f6.firebasestorage.app",
-            messagingSenderId: "896521474533",
-            appId: "1:896521474533:web:6e054c33637cb500e59f0c"
-        };
-
+        // Firebase Setup
+        const firebaseConfig = JSON.parse('{"apiKey":"AIzaSyBPFWe9FSkUBaiyaeBMhiXZm7g8QlfZzKQ","authDomain":"kripto-ee5f6.firebaseapp.com","projectId":"kripto-ee5f6","storageBucket":"kripto-ee5f6.firebasestorage.app","messagingSenderId":"896521474533","appId":"1:896521474533:web:6e054c33637cb500e59f0c"}');
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const stateDoc = doc(db, "kullanicilar", "kaya_ailesi");
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kripto-takip-v1-3';
 
-        const initial = {
-            aydin: {
-                banks: { 'ON Bank': 0, 'Kuveyt Türk': 0, 'İş Bankası': 0, 'Halkbank': 0, 'Akbank': 0, 'TOM Bank': 0, 'VakıfBank': 0 },
-                crypto: { 'Binance TR': 0, 'Binance Global': 0 }
-            },
-            berna: {
-                banks: { 'DenizBank': 0, 'Enpara': 0, 'Yapı Kredi': 0, 'İş Bankası': 0, 'Akbank': 0 },
-                crypto: { 'BtcTurk': 0, 'Binance Global': 0 }
-            },
-            logs: []
+        let state = {
+            aydin: { banks: { 'ON Bank': 0, 'Kuveyt Türk': 0, 'İş Bankası': 0, 'Akbank': 0 }, crypto: { 'Binance TR': 0, 'Binance Global': 0 } },
+            berna: { banks: { 'DenizBank': 0, 'Enpara': 0, 'Yapı Kredi': 0 }, crypto: { 'BtcTurk': 0, 'Binance Global': 0 } },
+            blocks: [],
+            history: []
         };
+        let usdRate = 34.65;
+        let currentUser = null;
 
-        let state = {...initial};
-        let usd = 34.65;
-        let isSaving = false;
-
-        // Modal "0" temizleme mantığı
-        window.handleZeroClear = (el) => {
-            if (el.value === "0") el.value = "";
-        };
-
-        async function start() {
+        // AUTH & SYNC (CORRECTED PATHS)
+        const initAuth = async () => {
             try {
-                await signInAnonymously(auth);
-                onSnapshot(stateDoc, async (snap) => {
-                    if (snap.exists()) {
-                        state = snap.data();
-                    } else {
-                        await setDoc(stateDoc, initial);
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (e) {
+                        await signInAnonymously(auth);
                     }
-                    render();
-                    document.getElementById('last-update').innerText = "Son Senk: " + new Date().toLocaleTimeString();
-                });
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth error:", err);
+                updateStatus("Bağlantı Hatası", "bg-red-500");
+            }
+        };
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                updateStatus("Bağlı", "bg-green-500");
+                listenData();
+            }
+        });
+
+        function listenData() {
+            if (!currentUser) return;
+            // RULE 1: Segment check - artifacts(1)/appId(2)/public(3)/data(4)/mainState(5)/dataDoc(6)
+            // Segment sayısı her zaman çift olmalıdır. "mainState" koleksiyon, "dataDoc" dokümandır.
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mainState', 'dataDoc');
+            
+            onSnapshot(docRef, (snap) => {
+                if (snap.exists()) {
+                    state = snap.data();
+                    renderAll();
+                } else {
+                    saveData();
+                }
+            }, (err) => {
+                console.error("Snapshot error:", err);
+                updateStatus("Erişim Yok", "bg-red-500");
+            });
+        }
+
+        async function saveData() {
+            if (!currentUser) return;
+            updateStatus("Yükleniyor...", "bg-orange-400", true);
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'mainState', 'dataDoc');
+            try {
+                await setDoc(docRef, state);
+                updateStatus("Güncellendi", "bg-green-500");
             } catch (e) {
-                console.error("Firebase Başlatma Hatası");
+                console.error("Save error:", e);
+                updateStatus("Hata", "bg-red-500");
             }
         }
 
-        function render() {
-            const fmt = (v, c) => new Intl.NumberFormat('tr-TR', { 
-                style: 'currency', currency: c, maximumFractionDigits: 0 
-            }).format(v);
-            
+        function updateStatus(txt, cls, load = false) {
+            const statusText = document.getElementById('sync-status');
+            const statusDot = document.getElementById('sync-dot');
+            if (statusText) statusText.innerText = txt;
+            if (statusDot) statusDot.className = `w-1.5 h-1.5 rounded-full ${cls} ${load ? 'loading-pulse' : ''}`;
+        }
+
+        // UI RENDERERS
+        function renderAll() {
+            const fmt = (v, c) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: c, maximumFractionDigits: 0 }).format(v);
             const card = (p, t, n, v, c) => `
-                <div onclick="openModal('${p}','${t}','${n}',${v},'${c}')" class="bg-slate-50 p-4 rounded-2xl flex justify-between items-center active:scale-95 transition-all cursor-pointer border border-slate-100/50">
-                    <span class="text-[11px] font-bold text-slate-500">${n}</span>
-                    <span class="text-sm font-black text-slate-900">${fmt(v, c)}</span>
+                <div onclick="openEditModal('${p}','${t}','${n}',${v})" class="bg-slate-50 p-4 rounded-2xl border border-transparent hover:border-blue-200 active:scale-95 transition-all cursor-pointer">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tighter truncate">${n}</p>
+                    <p class="text-sm font-black text-slate-800">${fmt(v, c)}</p>
                 </div>`;
 
             let aT = 0, aU = 0, bT = 0, bU = 0;
 
-            if(state.aydin) {
-                document.getElementById('aydin-banks').innerHTML = Object.entries(state.aydin.banks || {}).map(([n,v]) => { aT += v; return card('aydin','banks',n,v,'TRY') }).join('');
-                document.getElementById('aydin-crypto').innerHTML = Object.entries(state.aydin.crypto || {}).map(([n,v]) => { aU += v; return card('aydin','crypto',n,v,'USD') }).join('');
-            }
-            if(state.berna) {
-                document.getElementById('berna-banks').innerHTML = Object.entries(state.berna.banks || {}).map(([n,v]) => { bT += v; return card('berna','banks',n,v,'TRY') }).join('');
-                document.getElementById('berna-crypto').innerHTML = Object.entries(state.berna.crypto || {}).map(([n,v]) => { bU += v; return card('berna','crypto',n,v,'USD') }).join('');
-            }
+            let aB = ""; 
+            Object.entries(state.aydin.banks).forEach(([n,v]) => { aT+=v; aB+=card('aydin','banks',n,v,'TRY')});
+            let aC = ""; 
+            Object.entries(state.aydin.crypto).forEach(([n,v]) => { aU+=v; aC+=card('aydin','crypto',n,v,'USD')});
+            document.getElementById('aydin-banks-container').innerHTML = aB;
+            document.getElementById('aydin-crypto-container').innerHTML = aC;
+            document.getElementById('aydin-total').innerText = fmt(aT + (aU*usdRate), 'TRY');
 
-            const aSum = aT + (aU * usd);
-            const bSum = bT + (bU * usd);
+            let bB = ""; 
+            Object.entries(state.berna.banks).forEach(([n,v]) => { bT+=v; bB+=card('berna','banks',n,v,'TRY')});
+            let bC = ""; 
+            Object.entries(state.berna.crypto).forEach(([n,v]) => { bU+=v; bC+=card('berna','crypto',n,v,'USD')});
+            document.getElementById('berna-banks-container').innerHTML = bB;
+            document.getElementById('berna-crypto-container').innerHTML = bC;
+            document.getElementById('berna-total').innerText = fmt(bT + (bU*usdRate), 'TRY');
 
-            document.getElementById('aydin-total').innerText = fmt(aSum, 'TRY');
-            document.getElementById('berna-total').innerText = fmt(bSum, 'TRY');
-            document.getElementById('total-balance').innerText = fmt(aSum + bSum, 'TRY');
+            document.getElementById('header-total-value').innerText = fmt((aT+aU*usdRate)+(bT+bU*usdRate), 'TRY');
 
-            document.getElementById('history-list').innerHTML = (state.logs || []).slice(0, 20).map(l => `
-                <div class="p-5 flex justify-between items-center">
-                    <div>
-                        <p class="text-[9px] font-bold text-slate-400 uppercase">${l.date}</p>
-                        <p class="text-[12px] font-black text-slate-800">${l.msg}</p>
-                    </div>
-                    <span class="text-[8px] font-black px-3 py-1 rounded-full ${l.user === 'aydin' ? 'bg-slate-900' : 'bg-blue-600'} text-white uppercase">${l.user}</span>
-                </div>
-            `).join('');
-
+            renderBlocks();
+            renderHistory();
+            updateTransferForm();
             lucide.createIcons();
         }
 
+        function renderBlocks() {
+            const container = document.getElementById('blocks-container');
+            container.innerHTML = (state.blocks || []).map(b => `
+                <div class="bg-white p-6 rounded-[24px] border border-orange-100 flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">${b.person} - ${b.target}</p>
+                        <p class="text-xl font-black">${b.amount} $</p>
+                    </div>
+                    <button onclick="removeBlock(${b.id})" class="bg-orange-50 text-orange-600 px-4 py-2 rounded-xl text-xs font-bold">Kaldır</button>
+                </div>
+            `).join('');
+        }
+
+        function renderHistory() {
+            document.getElementById('history-list').innerHTML = (state.history || []).slice(0, 20).map(h => `
+                <div class="p-5 flex justify-between items-center">
+                    <div>
+                        <p class="text-sm font-bold">${h.msg}</p>
+                        <p class="text-[10px] text-slate-400 font-medium">${h.date}</p>
+                    </div>
+                    <span class="text-[9px] font-black px-3 py-1 rounded-full uppercase ${h.user === 'aydin' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'}">${h.user}</span>
+                </div>
+            `).join('');
+        }
+
+        // ACTIONS
         let activeEdit = null;
-        window.openModal = (p, t, n, v, c) => {
+        window.openEditModal = (p, t, n, v) => {
             activeEdit = { p, t, n };
             document.getElementById('modal-title').innerText = n;
             document.getElementById('modal-input').value = v;
-            document.getElementById('modal-currency').innerText = c;
-            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('edit-modal').classList.remove('hidden');
         };
 
-        window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+        window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
 
-        window.saveModal = async () => {
-            if(isSaving) return;
-            isSaving = true;
+        window.saveEdit = async () => {
             const val = parseFloat(document.getElementById('modal-input').value) || 0;
             state[activeEdit.p][activeEdit.t][activeEdit.n] = val;
-            state.logs.unshift({ 
-                date: new Date().toLocaleTimeString('tr-TR'), 
-                msg: `${activeEdit.n}: ${val}`, 
-                user: activeEdit.p 
-            });
-            await setDoc(stateDoc, state);
-            closeModal();
-            isSaving = false;
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${activeEdit.n} Güncellendi`, user: activeEdit.p });
+            await saveData();
+            closeEditModal();
         };
 
-        document.getElementById('transfer-form').onsubmit = async (e) => {
+        window.updateTransferForm = () => {
+            const p = document.getElementById('t-person').value;
+            const type = document.getElementById('t-type').value;
+            const src = document.getElementById('t-source');
+            const trg = document.getElementById('t-target');
+            if(!src || !trg) return;
+            src.innerHTML = ""; trg.innerHTML = "";
+
+            const banks = Object.keys(state[p].banks);
+            const crypto = Object.keys(state[p].crypto);
+
+            if (type === 'bank_to_crypto') {
+                banks.forEach(b => src.add(new Option(b, b)));
+                crypto.forEach(c => trg.add(new Option(c, c)));
+            } else if (type === 'crypto_to_crypto') {
+                crypto.forEach(c => src.add(new Option(c, c)));
+                crypto.forEach(c => trg.add(new Option(c, c)));
+            } else if (type === 'p2p_sell') {
+                crypto.forEach(c => src.add(new Option(c, c)));
+                banks.forEach(b => trg.add(new Option(b, b)));
+            } else {
+                banks.forEach(b => src.add(new Option(b, b)));
+                banks.forEach(b => trg.add(new Option(b, b)));
+            }
+        };
+
+        window.handleTransfer = async (e) => {
             e.preventDefault();
-            const p = document.getElementById('tr-person').value;
-            const outAmt = parseFloat(document.getElementById('tr-out').value) || 0;
-            const inAmt = parseFloat(document.getElementById('tr-in').value) || 0;
-            state.logs.unshift({ 
-                date: new Date().toLocaleTimeString('tr-TR'), 
-                msg: `Yeni Kayıt: -${outAmt} / +${inAmt}`, 
-                user: p 
-            });
-            await setDoc(stateDoc, state);
-            e.target.reset();
+            const type = document.getElementById('t-type').value;
+            const p = document.getElementById('t-person').value;
+            const src = document.getElementById('t-source').value;
+            const trg = document.getElementById('t-target').value;
+            const a1 = parseFloat(document.getElementById('t-amount-1').value) || 0;
+            const a2 = parseFloat(document.getElementById('t-amount-2').value) || 0;
+
+            if (type === 'bank_to_crypto') {
+                state[p].banks[src] -= a1; state[p].crypto[trg] += a2;
+                state.blocks.push({ id: Date.now(), person: p, target: trg, amount: a2 });
+            } else if (type === 'crypto_to_crypto') {
+                state[p].crypto[src] -= a1; state[p].crypto[trg] += a2;
+            } else if (type === 'p2p_sell') {
+                state[p].crypto[src] -= a1; state[p].banks[trg] += a2;
+            } else {
+                state[p].banks[src] -= a1; state[p].banks[trg] += a2;
+            }
+
+            state.history.unshift({ date: new Date().toLocaleString('tr-TR'), msg: `${src} -> ${trg} (${a2})`, user: p });
+            await saveData();
             switchTab('dashboard');
+            e.target.reset();
+        };
+
+        window.removeBlock = async (id) => {
+            state.blocks = state.blocks.filter(b => b.id !== id);
+            await saveData();
         };
 
         window.switchTab = (id) => {
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById('tab-' + id).classList.add('active');
-            document.querySelectorAll('.nav-btn').forEach(btn => {
-                btn.classList.toggle('text-slate-900', btn.dataset.tab === id);
-                btn.classList.toggle('text-slate-400', btn.dataset.tab !== id);
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                if (b.dataset.tab === id) b.classList.add('nav-active');
+                else b.classList.remove('nav-active');
             });
             lucide.createIcons();
         };
 
-        window.clearLogs = async () => {
-            if(confirm("Tüm geçmiş silinecek?")) {
-                state.logs = [];
-                await setDoc(stateDoc, state);
-            }
-        };
-
-        const updateKur = async () => {
+        const updateRate = async () => {
             try {
                 const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
-                const data = await res.json();
-                usd = parseFloat(data.price);
-                document.getElementById('usd-rate-text').innerText = `USDT: ${usd.toFixed(2)} ₺`;
-                render();
+                const d = await res.json();
+                usdRate = parseFloat(d.price);
+                document.getElementById('live-rate-badge').innerText = `${usdRate.toFixed(2)} ₺`;
+                renderAll();
             } catch (e) {}
         };
 
-        updateKur();
-        setInterval(updateKur, 60000);
-        start();
+        window.saveData = saveData;
+        setInterval(updateRate, 60000);
+        updateRate();
+        initAuth();
     </script>
 </body>
 </html>
