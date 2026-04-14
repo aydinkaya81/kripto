@@ -30,7 +30,7 @@
         <div class="container mx-auto px-4 h-16 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i data-lucide="wallet" class="text-blue-400"></i>
-                <h1 class="text-xl font-bold tracking-wide">KriptoTakip <span class="text-slate-400 font-normal text-sm">v1.0</span></h1>
+                <h1 class="text-xl font-bold tracking-wide">KriptoTakip <span class="text-slate-400 font-normal text-sm">v1.1</span></h1>
             </div>
             <div class="flex items-center gap-4 text-sm">
                 <div class="hidden sm:flex flex-col text-right mr-2 border-r border-slate-700 pr-4">
@@ -70,7 +70,7 @@
                 <button onclick="performDailyClose()" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-900 text-white rounded-lg font-medium hover:bg-slate-800 transition-colors shadow-sm">
                     <i data-lucide="save" class="w-4 h-4"></i> Günü Kapat & Kaydet
                 </button>
-                <p class="text-xs text-slate-400 mt-2 text-center">Mevcut bakiyeleri tarihe not eder.</p>
+                <p class="text-xs text-slate-400 mt-2 text-center">Mevcut bakiyeleri buluta yedekler.</p>
             </div>
         </nav>
 
@@ -99,7 +99,7 @@
                 <div class="mb-6 flex justify-between items-end">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-800">Cüzdan Özeti</h2>
-                        <p class="text-slate-500 text-sm">Aydın ve Berna hesaplarının güncel durumları.</p>
+                        <p class="text-slate-500 text-sm">Canlı kur ve bulut senkronizasyonu aktif.</p>
                     </div>
                 </div>
 
@@ -114,14 +114,9 @@
                         </div>
                         <div class="p-5">
                             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Bankalar (₺)</h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" id="aydin-banks-container">
-                                <!-- Populated by JS -->
-                            </div>
-
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" id="aydin-banks-container"></div>
                             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6 border-t pt-4">Kripto Borsaları ($)</h4>
-                            <div class="grid grid-cols-2 gap-3" id="aydin-crypto-container">
-                                <!-- Populated by JS -->
-                            </div>
+                            <div class="grid grid-cols-2 gap-3" id="aydin-crypto-container"></div>
                         </div>
                     </div>
 
@@ -135,14 +130,9 @@
                         </div>
                         <div class="p-5">
                             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Bankalar (₺)</h4>
-                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" id="berna-banks-container">
-                                <!-- Populated by JS -->
-                            </div>
-
+                            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6" id="berna-banks-container"></div>
                             <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3 mt-6 border-t pt-4">Kripto Borsaları ($)</h4>
-                            <div class="grid grid-cols-2 gap-3" id="berna-crypto-container">
-                                <!-- Populated by JS -->
-                            </div>
+                            <div class="grid grid-cols-2 gap-3" id="berna-crypto-container"></div>
                         </div>
                     </div>
                 </div>
@@ -151,23 +141,17 @@
             <!-- TAB 2: TRANSFER & İŞLEMLER -->
             <div id="tab-transfer" class="tab-content max-w-3xl mx-auto">
                 <h2 class="text-2xl font-bold text-slate-800 mb-2">Yeni İşlem Ekle</h2>
-                <p class="text-slate-500 text-sm mb-6">Para transferleri, P2P işlemleri veya borsaya para aktarımlarını buradan kaydedin.</p>
-
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
                     <form id="transfer-form" onsubmit="handleTransfer(event)" class="space-y-5">
-                        
-                        <!-- İşlem Tipi -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">İşlem Tipi</label>
-                            <select id="t-type" class="w-full border-slate-300 rounded-lg shadow-sm p-2.5 bg-slate-50 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition-all" onchange="updateTransferForm()">
-                                <option value="bank_to_crypto">Banka -> Yerel Borsa (TRY Yatır & USDT Al - 48 Saat Blokaj Başlatır)</option>
+                            <select id="t-type" class="w-full border-slate-300 rounded-lg shadow-sm p-2.5 bg-slate-50 border outline-none transition-all" onchange="updateTransferForm()">
+                                <option value="bank_to_crypto">Banka -> Yerel Borsa (TRY Yatır & USDT Al - 48 Saat Blokaj)</option>
                                 <option value="crypto_to_crypto">Yerel Borsa -> Global Borsa (USDT Transferi)</option>
                                 <option value="p2p_sell">Global Borsa -> Banka (P2P Satış ile TRY Çekim)</option>
                                 <option value="bank_to_bank">Banka -> Banka (EFT/Havale)</option>
                             </select>
                         </div>
-
-                        <!-- Kişi Seçimi -->
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1">Kişi</label>
                             <select id="t-person" class="w-full border-slate-300 rounded-lg shadow-sm p-2.5 bg-slate-50 border outline-none" onchange="updateTransferForm()">
@@ -175,8 +159,6 @@
                                 <option value="berna">Berna Kaya</option>
                             </select>
                         </div>
-
-                        <!-- Dinamik Hesap Seçimleri -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5 p-4 bg-slate-50 rounded-lg border border-slate-200">
                             <div>
                                 <label class="block text-sm font-medium text-slate-700 mb-1">Çıkış Hesabı</label>
@@ -187,10 +169,8 @@
                                 <select id="t-target" class="w-full border-slate-300 rounded-lg shadow-sm p-2.5 border outline-none"></select>
                             </div>
                         </div>
-
-                        <!-- Tutarlar -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5" id="amount-container">
-                            <div id="div-amount-1">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
                                 <label id="lbl-amount-1" class="block text-sm font-medium text-slate-700 mb-1">Çıkan Tutar</label>
                                 <div class="relative">
                                     <input type="number" id="t-amount-1" step="0.01" min="0" required onfocus="this.select()" class="w-full border-slate-300 rounded-lg shadow-sm p-2.5 pl-3 pr-12 border outline-none font-medium">
@@ -205,13 +185,6 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Bilgi Notu -->
-                        <div id="t-info" class="bg-blue-50 text-blue-800 text-sm p-3 rounded-lg flex gap-2 items-start">
-                            <i data-lucide="info" class="w-5 h-5 shrink-0"></i>
-                            <p>Bankadan yerel borsaya (Binance TR / BtcTurk) gönderilip dolara çevrilen tutarlar için otomatik olarak <b>48 saatlik çekim blokajı</b> sayacı başlatılacaktır.</p>
-                        </div>
-
                         <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg shadow transition-colors flex justify-center items-center gap-2">
                             <i data-lucide="check-circle" class="w-5 h-5"></i> İşlemi Kaydet & Uygula
                         </button>
@@ -222,51 +195,36 @@
             <!-- TAB 3: 48 SAAT BLOKAJLAR -->
             <div id="tab-blocks" class="tab-content max-w-5xl mx-auto">
                 <div class="mb-6">
-                    <h2 class="text-2xl font-bold text-slate-800">48 Saatlik Blokajlar</h2>
-                    <p class="text-slate-500 text-sm">Bankadan borsaya yatırılıp dolara çevrilen ve transfer için 48 saat bekleyen fonlar.</p>
+                    <h2 class="text-2xl font-bold text-slate-800">Aktif Blokajlar</h2>
+                    <p class="text-slate-500 text-sm">Blokajın tam olarak ne zaman biteceğini görebilirsiniz.</p>
                 </div>
-
                 <div id="empty-blocks" class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 flex flex-col items-center justify-center text-slate-400 hidden">
                     <i data-lucide="shield-check" class="w-16 h-16 mb-3 text-slate-300"></i>
                     <p class="text-lg">Şu anda aktif bir blokaj bulunmuyor.</p>
                 </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="blocks-container">
-                    <!-- Populated by JS -->
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="blocks-container"></div>
             </div>
 
             <!-- TAB 4: GÜNLÜK KAYITLAR -->
             <div id="tab-history" class="tab-content max-w-5xl mx-auto">
-                <div class="mb-6 flex justify-between items-end">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-800">Geçmiş & Günlük Kapanışlar</h2>
-                        <p class="text-slate-500 text-sm">Yapılan işlemler ve gün sonu bakiye notları.</p>
-                    </div>
-                </div>
-
+                <h2 class="text-2xl font-bold text-slate-800 mb-4">İşlem Geçmişi</h2>
                 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left text-slate-600">
                             <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b border-slate-200">
                                 <tr>
-                                    <th class="px-6 py-4">Tarih / Saat</th>
+                                    <th class="px-6 py-4">Tarih</th>
                                     <th class="px-6 py-4">Kişi</th>
-                                    <th class="px-6 py-4">Aksiyon / İşlem</th>
+                                    <th class="px-6 py-4">İşlem</th>
                                     <th class="px-6 py-4">Detay</th>
                                 </tr>
                             </thead>
-                            <tbody id="history-tbody" class="divide-y divide-slate-100">
-                                <!-- Populated by JS -->
-                            </tbody>
+                            <tbody id="history-tbody" class="divide-y divide-slate-100"></tbody>
                         </table>
                     </div>
-                    <div id="empty-history" class="p-8 text-center text-slate-400 hidden">
-                        Henüz bir işlem geçmişi yok.
-                    </div>
+                    <div id="empty-history" class="p-8 text-center text-slate-400 hidden">Henüz bir kayıt yok.</div>
                 </div>
             </div>
-
         </main>
     </div>
 
@@ -278,24 +236,39 @@
                 <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <div class="p-5">
-                <p id="edit-account-name" class="text-sm font-medium text-slate-500 mb-3">Banka Adı</p>
+                <p id="edit-account-name" class="text-sm font-medium text-slate-500 mb-3"></p>
                 <div class="relative mb-5">
-                    <input type="number" id="edit-amount" step="0.01" onfocus="this.select()" class="w-full border-slate-300 rounded-lg shadow-sm p-3 border outline-none font-bold text-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                    <input type="number" id="edit-amount" step="0.01" onfocus="this.select()" class="w-full border-slate-300 rounded-lg shadow-sm p-3 border outline-none font-bold text-lg focus:border-blue-500">
                     <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none text-slate-400 font-semibold" id="edit-currency">₺</div>
                 </div>
-                <button onclick="saveEdit()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 rounded-lg transition-colors">Kaydet</button>
+                <button onclick="saveEdit()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-medium py-2.5 rounded-lg transition-colors">Buluta Kaydet</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- DATA STRUCTURE & STATE ---
-        let usdToTryRate = 32.50; // Varsayılan, API'den güncellenecek
-        
+        // --- FIREBASE AYARLARI ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBPFWe9FSkUBaiyaeBMhiXZm7g8QlfZzKQ",
+            authDomain: "kripto-ee5f6.firebaseapp.com",
+            projectId: "kripto-ee5f6",
+            storageBucket: "kripto-ee5f6.firebasestorage.app",
+            messagingSenderId: "896521474533",
+            appId: "1:896521474533:web:6e054c33637cb500e59f0c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'kripto-takip-app';
+
+        // --- STATE ---
+        let usdToTryRate = 34.20;
+        let userId = null;
         let state = {
             aydin: {
                 banks: { 'ON Bank': 0, 'Kuveyt Türk': 0, 'İş Bankası': 0, 'Halkbank': 0, 'Akbank': 0, 'TOM Bank': 0, 'VakıfBank': 0 },
@@ -310,541 +283,252 @@
         };
 
         let currentEdit = null;
-        let timerInterval = null;
 
-        // --- CLOUD STORAGE (FIREBASE) ---
-        let db = null;
-        let userId = null;
-
-        const initFirebase = async () => {
-            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-            if (firebaseConfig) {
-                const app = initializeApp(firebaseConfig);
-                const auth = getAuth(app);
-                db = getFirestore(app);
-
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
-                onAuthStateChanged(auth, (user) => {
-                    if (user) {
-                        userId = user.uid;
-                        loadStateFromCloud();
-                    }
-                });
-            } else {
-                console.log("Bulut veritabanı ayarları bulunamadı. Sadece yerel çalışıyor.");
-            }
+        // --- AUTH & DATA SYNC ---
+        const initAuth = async () => {
+            try {
+                await signInAnonymously(auth);
+            } catch (err) { console.error("Auth error", err); }
         };
 
-        const saveStateToCloud = async () => {
-            if (!db || !userId) return;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                await loadData();
+            }
+        });
+
+        const saveData = async () => {
+            if (!userId) return;
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'appData', 'state');
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'appData', 'mainState');
                 await setDoc(docRef, state);
-            } catch (error) {
-                console.error("Buluta kayıt hatası:", error);
-            }
+            } catch (err) { console.error("Kaydetme hatası", err); }
         };
 
-        const loadStateFromCloud = async () => {
-            if (!db || !userId) return;
+        const loadData = async () => {
+            if (!userId) return;
             try {
-                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'appData', 'state');
+                const docRef = doc(db, 'artifacts', appId, 'users', userId, 'appData', 'mainState');
                 const docSnap = await getDoc(docRef);
-                
                 if (docSnap.exists()) {
-                    const loadedData = docSnap.data();
-                    // Yeni eklenen banka vb. varsa varsayılan yapıyı korumak için merge ediyoruz
-                    state = { ...state, ...loadedData };
+                    state = docSnap.data();
                     renderDashboard();
                     updateTransferForm();
                     renderBlocks();
                     renderHistory();
-                    showToast('Verileriniz buluttan yüklendi', 'info');
                 }
-            } catch (error) {
-                console.error("Buluttan yükleme hatası:", error);
-            }
+            } catch (err) { console.error("Yükleme hatası", err); }
         };
 
-        // --- LIVE USDT RATE (BINANCE API) ---
-        const fetchUSDTPrice = async () => {
+        // --- CORE FUNCTIONS ---
+        const fetchRate = async () => {
             try {
                 const res = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');
                 const data = await res.json();
-                if (data && data.price) {
+                if (data.price) {
                     usdToTryRate = parseFloat(data.price);
-                    const badge = document.getElementById('live-rate-badge');
-                    if(badge) badge.textContent = `1 USDT = ${usdToTryRate.toFixed(2)} ₺`;
-                    renderDashboard(); // Kuru güncelleyince dashboard'u yenile
+                    document.getElementById('live-rate-badge').innerText = `1 USDT = ${usdToTryRate.toFixed(2)} ₺`;
+                    renderDashboard();
                 }
-            } catch (e) {
-                console.error("Kur bilgisi çekilemedi", e);
-            }
+            } catch (e) { console.warn("Kur çekilemedi"); }
         };
 
-        // --- INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
-            initFirebase();
-            fetchUSDTPrice();
-            setInterval(fetchUSDTPrice, 60000); // Kuru dakikada bir güncelle
-            renderDashboard();
-            updateTransferForm();
-            renderHistory();
-            startTimerLoop();
-        });
-
-        // --- UI NAVIGATION ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.getElementById('tab-' + tabId).classList.add('active');
-
-            document.querySelectorAll('nav:not(.md\\:hidden) button').forEach(el => {
-                el.classList.remove('bg-blue-50', 'text-blue-700');
-                el.classList.add('text-slate-600', 'hover:bg-slate-50');
-            });
-            const activeBtn = document.getElementById('btn-' + tabId);
-            if(activeBtn) {
-                activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
-                activeBtn.classList.add('bg-blue-50', 'text-blue-700');
-            }
-
-            document.querySelectorAll('nav.md\\:hidden button').forEach(el => {
-                el.classList.remove('text-blue-600');
-                el.classList.add('text-slate-500');
-            });
-            if(event && event.currentTarget) {
-                event.currentTarget.classList.remove('text-slate-500');
-                event.currentTarget.classList.add('text-blue-600');
-            }
-        }
-
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            if(!container) return;
-            const toast = document.createElement('div');
-            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
-            const icon = type === 'success' ? 'check-circle' : 'info';
-            
-            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 text-sm font-medium transform translate-x-full transition-transform duration-300 ease-out`;
-            toast.innerHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i> ${message}`;
-            
-            container.appendChild(toast);
-            lucide.createIcons({root: toast});
-            
-            setTimeout(() => { toast.classList.remove('translate-x-full'); }, 10);
-            setTimeout(() => { 
-                toast.classList.add('translate-x-full'); 
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // --- DASHBOARD RENDERING ---
-        function formatMoney(amount, currency) {
-            return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: currency }).format(amount);
-        }
-
-        function renderAccountCard(person, type, accountName, amount, currency) {
-            const isCrypto = currency === 'USD';
-            const icon = isCrypto ? 'bitcoin' : 'building-2';
-            const color = isCrypto ? 'text-orange-500' : 'text-blue-500';
-            
-            return `
-                <div class="border border-slate-200 rounded-lg p-3 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer group bg-white" onclick="openEditModal('${person}', '${type}', '${accountName}', ${amount}, '${currency}')">
-                    <div class="flex items-center gap-2 mb-1">
-                        <i data-lucide="${icon}" class="w-4 h-4 ${color}"></i>
-                        <span class="text-xs font-semibold text-slate-600 truncate" title="${accountName}">${accountName}</span>
-                    </div>
-                    <div class="flex justify-between items-end">
-                        <span class="font-bold text-slate-800">${formatMoney(amount, currency)}</span>
-                        <i data-lucide="pencil" class="w-3 h-3 text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity"></i>
-                    </div>
-                </div>
-            `;
+            document.querySelectorAll('nav button').forEach(el => el.classList.remove('bg-blue-50', 'text-blue-700'));
+            const btn = document.getElementById('btn-' + tabId);
+            if(btn) btn.classList.add('bg-blue-50', 'text-blue-700');
         }
 
         function renderDashboard() {
-            let aydinTotalTRY = 0; let aydinTotalUSD = 0;
-            let bernaTotalTRY = 0; let bernaTotalUSD = 0;
-
-            const aydinBanksHtml = Object.entries(state.aydin.banks).map(([name, val]) => {
-                aydinTotalTRY += val; return renderAccountCard('aydin', 'banks', name, val, 'TRY');
-            }).join('');
-            document.getElementById('aydin-banks-container').innerHTML = aydinBanksHtml;
-
-            const aydinCryptoHtml = Object.entries(state.aydin.crypto).map(([name, val]) => {
-                aydinTotalUSD += val; return renderAccountCard('aydin', 'crypto', name, val, 'USD');
-            }).join('');
-            document.getElementById('aydin-crypto-container').innerHTML = aydinCryptoHtml;
-
-            const bernaBanksHtml = Object.entries(state.berna.banks).map(([name, val]) => {
-                bernaTotalTRY += val; return renderAccountCard('berna', 'banks', name, val, 'TRY');
-            }).join('');
-            document.getElementById('berna-banks-container').innerHTML = bernaBanksHtml;
-
-            const bernaCryptoHtml = Object.entries(state.berna.crypto).map(([name, val]) => {
-                bernaTotalUSD += val; return renderAccountCard('berna', 'crypto', name, val, 'USD');
-            }).join('');
-            document.getElementById('berna-crypto-container').innerHTML = bernaCryptoHtml;
-
-            const aydinGrand = aydinTotalTRY + (aydinTotalUSD * usdToTryRate);
-            const bernaGrand = bernaTotalTRY + (bernaTotalUSD * usdToTryRate);
+            const format = (v, c) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: c }).format(v);
             
-            document.getElementById('aydin-total').textContent = formatMoney(aydinGrand, 'TRY');
-            document.getElementById('berna-total').textContent = formatMoney(bernaGrand, 'TRY');
-            document.getElementById('header-total-value').textContent = formatMoney(aydinGrand + bernaGrand, 'TRY');
+            const createCard = (p, t, n, v, c) => `
+                <div class="border border-slate-200 rounded-lg p-3 hover:border-blue-300 transition-all cursor-pointer bg-white group" onclick="openEditModal('${p}', '${t}', '${n}', ${v}, '${c}')">
+                    <div class="flex items-center gap-2 mb-1 text-xs font-semibold text-slate-500 truncate">${n}</div>
+                    <div class="flex justify-between items-end font-bold text-slate-800">${format(v, c)} <i data-lucide="pencil" class="w-3 h-3 opacity-0 group-hover:opacity-100"></i></div>
+                </div>`;
 
+            let aT = 0, aU = 0, bT = 0, bU = 0;
+
+            document.getElementById('aydin-banks-container').innerHTML = Object.entries(state.aydin.banks).map(([n, v]) => { aT += v; return createCard('aydin', 'banks', n, v, 'TRY'); }).join('');
+            document.getElementById('aydin-crypto-container').innerHTML = Object.entries(state.aydin.crypto).map(([n, v]) => { aU += v; return createCard('aydin', 'crypto', n, v, 'USD'); }).join('');
+            document.getElementById('berna-banks-container').innerHTML = Object.entries(state.berna.banks).map(([n, v]) => { bT += v; return createCard('berna', 'banks', n, v, 'TRY'); }).join('');
+            document.getElementById('berna-crypto-container').innerHTML = Object.entries(state.berna.crypto).map(([n, v]) => { bU += v; return createCard('berna', 'crypto', n, v, 'USD'); }).join('');
+
+            const aTotal = aT + (aU * usdToTryRate);
+            const bTotal = bT + (bU * usdToTryRate);
+            
+            document.getElementById('aydin-total').innerText = format(aTotal, 'TRY');
+            document.getElementById('berna-total').innerText = format(bTotal, 'TRY');
+            document.getElementById('header-total-value').innerText = format(aTotal + bTotal, 'TRY');
             lucide.createIcons();
         }
 
-        // --- MANUAL EDITING ---
-        function openEditModal(person, type, accountName, currentAmount, currency) {
+        function openEditModal(person, type, accountName, val, curr) {
             currentEdit = { person, type, accountName };
-            const pName = person === 'aydin' ? 'Aydın' : 'Berna';
-            document.getElementById('edit-account-name').textContent = `${pName} - ${accountName}`;
-            
-            const amtInput = document.getElementById('edit-amount');
-            amtInput.value = currentAmount;
-            
-            document.getElementById('edit-currency').textContent = currency === 'TRY' ? '₺' : '$';
-            
-            const modal = document.getElementById('edit-modal');
-            const content = document.getElementById('edit-modal-content');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                content.classList.remove('scale-95');
-                content.classList.add('scale-100');
-            }, 10);
-            
-            // Fokuslan ve içeriği seç
-            setTimeout(() => { amtInput.focus(); amtInput.select(); }, 50);
+            document.getElementById('edit-account-name').innerText = accountName;
+            document.getElementById('edit-amount').value = val;
+            document.getElementById('edit-currency').innerText = curr === 'TRY' ? '₺' : '$';
+            document.getElementById('edit-modal').classList.remove('hidden');
+            document.getElementById('edit-amount').focus();
         }
 
-        function closeEditModal() {
-            const modal = document.getElementById('edit-modal');
-            const content = document.getElementById('edit-modal-content');
-            content.classList.remove('scale-100');
-            content.classList.add('scale-95');
-            setTimeout(() => { modal.classList.add('hidden'); }, 150);
-            currentEdit = null;
-        }
+        function closeEditModal() { document.getElementById('edit-modal').classList.add('hidden'); }
 
-        function saveEdit() {
-            if(!currentEdit) return;
-            const newVal = parseFloat(document.getElementById('edit-amount').value) || 0;
-            const { person, type, accountName } = currentEdit;
-            
-            const oldVal = state[person][type][accountName];
-            state[person][type][accountName] = newVal;
-            
-            addHistoryLog(person, 'Bakiye Güncelleme', `${accountName} bakiyesi değiştirildi: ${oldVal} -> ${newVal}`);
-            
+        async function saveEdit() {
+            const v = parseFloat(document.getElementById('edit-amount').value) || 0;
+            state[currentEdit.person][currentEdit.type][currentEdit.accountName] = v;
+            addHistoryLog(currentEdit.person, 'Güncelleme', `${currentEdit.accountName} bakiyesi güncellendi.`);
             renderDashboard();
             closeEditModal();
-            saveStateToCloud(); // Buluta kaydet
-            showToast('Bakiye güncellendi ve kaydedildi');
+            await saveData();
         }
 
-        // --- TRANSFER LOGIC ---
         function updateTransferForm() {
             const type = document.getElementById('t-type').value;
             const person = document.getElementById('t-person').value;
-            const sourceSelect = document.getElementById('t-source');
-            const targetSelect = document.getElementById('t-target');
-            const infoBox = document.getElementById('t-info');
+            const src = document.getElementById('t-source');
+            const trg = document.getElementById('t-target');
             
+            src.innerHTML = ''; trg.innerHTML = '';
             const banks = Object.keys(state[person].banks);
-            const localCrypto = person === 'aydin' ? 'Binance TR' : 'BtcTurk';
-
-            sourceSelect.innerHTML = ''; targetSelect.innerHTML = '';
+            const localC = person === 'aydin' ? 'Binance TR' : 'BtcTurk';
 
             if (type === 'bank_to_crypto') {
-                banks.forEach(b => sourceSelect.add(new Option(b, b)));
-                targetSelect.add(new Option(localCrypto, localCrypto));
-                infoBox.classList.remove('hidden');
-                
-                document.getElementById('lbl-amount-1').innerText = 'Bankadan Çıkan (TRY)';
-                document.getElementById('curr-amount-1').innerText = '₺';
-                document.getElementById('div-amount-2').classList.remove('hidden');
-                document.getElementById('lbl-amount-2').innerText = 'Borsaya Giren (USDT)';
-                document.getElementById('curr-amount-2').innerText = '$';
-            } 
-            else if (type === 'crypto_to_crypto') {
-                sourceSelect.add(new Option(localCrypto, localCrypto));
-                targetSelect.add(new Option('Binance Global', 'Binance Global'));
-                infoBox.classList.add('hidden');
-                
-                document.getElementById('lbl-amount-1').innerText = 'Transfer Edilen (USDT)';
-                document.getElementById('curr-amount-1').innerText = '$';
-                document.getElementById('div-amount-2').classList.add('hidden');
-                document.getElementById('t-amount-2').value = 0; 
-            }
-            else if (type === 'p2p_sell') {
-                sourceSelect.add(new Option('Binance Global', 'Binance Global'));
-                banks.forEach(b => targetSelect.add(new Option(b, b)));
-                infoBox.classList.add('hidden');
-
-                document.getElementById('lbl-amount-1').innerText = 'Satılan (USDT)';
-                document.getElementById('curr-amount-1').innerText = '$';
-                document.getElementById('div-amount-2').classList.remove('hidden');
-                document.getElementById('lbl-amount-2').innerText = 'Bankaya Gelen (TRY)';
-                document.getElementById('curr-amount-2').innerText = '₺';
-            }
-            else if (type === 'bank_to_bank') {
-                banks.forEach(b => sourceSelect.add(new Option(b, b)));
-                banks.forEach(b => targetSelect.add(new Option(b, b)));
-                infoBox.classList.add('hidden');
-
-                document.getElementById('lbl-amount-1').innerText = 'Transfer Tutarı (TRY)';
-                document.getElementById('curr-amount-1').innerText = '₺';
-                document.getElementById('div-amount-2').classList.add('hidden');
-                document.getElementById('t-amount-2').value = 0;
+                banks.forEach(b => src.add(new Option(b, b)));
+                trg.add(new Option(localC, localC));
+            } else if (type === 'crypto_to_crypto') {
+                src.add(new Option(localC, localC));
+                trg.add(new Option('Binance Global', 'Binance Global'));
+            } else if (type === 'p2p_sell') {
+                src.add(new Option('Binance Global', 'Binance Global'));
+                banks.forEach(b => trg.add(new Option(b, b)));
+            } else {
+                banks.forEach(b => { src.add(new Option(b, b)); trg.add(new Option(b, b)); });
             }
         }
 
-        function handleTransfer(e) {
+        async function handleTransfer(e) {
             e.preventDefault();
             const type = document.getElementById('t-type').value;
             const person = document.getElementById('t-person').value;
-            const source = document.getElementById('t-source').value;
-            const target = document.getElementById('t-target').value;
-            const amount1 = parseFloat(document.getElementById('t-amount-1').value) || 0;
-            const amount2 = parseFloat(document.getElementById('t-amount-2').value) || 0;
-
-            if(source === target && type === 'bank_to_bank') {
-                showToast('Aynı hesaba transfer yapılamaz', 'error'); return;
-            }
+            const src = document.getElementById('t-source').value;
+            const trg = document.getElementById('t-target').value;
+            const a1 = parseFloat(document.getElementById('t-amount-1').value) || 0;
+            const a2 = parseFloat(document.getElementById('t-amount-2').value) || 0;
 
             if (type === 'bank_to_crypto') {
-                if(state[person].banks[source] < amount1) { showToast('Yetersiz bakiye!', 'error'); return; }
-                state[person].banks[source] -= amount1;
-                state[person].crypto[target] += amount2;
-                startBlockTimer(person, target, amount2);
-                addHistoryLog(person, 'Banka -> Borsa (Blokaj)', `${source} hesabından ${amount1}₺ çıktı, ${target} borsasına ${amount2}$ girdi.`);
-                showToast('Transfer ve blokaj başlatıldı!');
-            }
-            else if (type === 'crypto_to_crypto') {
-                if(state[person].crypto[source] < amount1) { showToast('Yetersiz bakiye!', 'error'); return; }
-                state[person].crypto[source] -= amount1;
-                state[person].crypto[target] += amount1;
-                addHistoryLog(person, 'Borsa Transferi', `${source} -> ${target} arası ${amount1}$ transfer edildi.`);
-                showToast('Kripto transferi başarılı!');
-            }
-            else if (type === 'p2p_sell') {
-                if(state[person].crypto[source] < amount1) { showToast('Yetersiz bakiye!', 'error'); return; }
-                state[person].crypto[source] -= amount1;
-                state[person].banks[target] += amount2;
-                const rate = (amount2 / amount1).toFixed(2);
-                addHistoryLog(person, 'P2P Satış', `${amount1}$ satıldı (Kur: ${rate}), ${target} hesabına ${amount2}₺ girdi.`);
-                showToast('P2P satışı işlendi!');
-            }
-            else if (type === 'bank_to_bank') {
-                if(state[person].banks[source] < amount1) { showToast('Yetersiz bakiye!', 'error'); return; }
-                state[person].banks[source] -= amount1;
-                state[person].banks[target] += amount1;
-                addHistoryLog(person, 'Banka İçi Transfer', `${source} -> ${target} arası ${amount1}₺ transfer edildi.`);
-                showToast('Havale/EFT işlendi!');
+                state[person].banks[src] -= a1;
+                state[person].crypto[trg] += a2;
+                const end = Date.now() + (48 * 3600000);
+                state.blocks.push({ id: Date.now(), person, exchange: trg, amount: a2, endTime: end });
+            } else if (type === 'crypto_to_crypto') {
+                state[person].crypto[src] -= a1;
+                state[person].crypto[trg] += a1;
+            } else if (type === 'p2p_sell') {
+                state[person].crypto[src] -= a1;
+                state[person].banks[trg] += a2;
+            } else {
+                state[person].banks[src] -= a1;
+                state[person].banks[trg] += a1;
             }
 
-            document.getElementById('t-amount-1').value = '';
-            document.getElementById('t-amount-2').value = '';
+            addHistoryLog(person, 'Transfer', `${src} -> ${trg} işlemi yapıldı.`);
             renderDashboard();
-            saveStateToCloud(); // Buluta kaydet
-            switchTab('dashboard');
-        }
-
-        // --- 48 HOUR BLOCK LOGIC ---
-        function startBlockTimer(person, exchange, amount) {
-            const now = new Date();
-            const endTime = new Date(now.getTime() + (48 * 60 * 60 * 1000)); 
-            
-            state.blocks.push({
-                id: Date.now().toString(),
-                person: person,
-                exchange: exchange,
-                amount: amount,
-                startTime: now.getTime(),
-                endTime: endTime.getTime()
-            });
-            
-            updateBlocksBadge();
             renderBlocks();
-            saveStateToCloud(); // Buluta kaydet
-        }
-
-        function updateBlocksBadge() {
-            const count = state.blocks.length;
-            const badges = [document.getElementById('block-badge'), document.getElementById('mobile-block-badge')];
-            badges.forEach(b => {
-                if(count > 0) { b.textContent = count; b.classList.remove('hidden'); } 
-                else { b.classList.add('hidden'); }
-            });
+            await saveData();
+            switchTab('dashboard');
         }
 
         function renderBlocks() {
             const container = document.getElementById('blocks-container');
-            const emptyState = document.getElementById('empty-blocks');
+            const badge = document.getElementById('block-badge');
+            const mobBadge = document.getElementById('mobile-block-badge');
             
-            if(state.blocks.length === 0) {
-                container.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            emptyState.classList.add('hidden');
-            
-            container.innerHTML = state.blocks.map(block => {
-                const pName = block.person === 'aydin' ? 'Aydın' : 'Berna';
-                const endString = new Date(block.endTime).toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                
-                return `
-                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 relative overflow-hidden" id="block-${block.id}">
-                        <div class="absolute top-0 left-0 w-full h-1 bg-slate-100">
-                            <div class="h-full bg-orange-400 transition-all duration-1000" id="progress-${block.id}" style="width: 100%"></div>
-                        </div>
-                        <div class="flex justify-between items-start mb-4 mt-2">
-                            <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase">${pName}</span>
-                                <h4 class="font-bold text-slate-800 flex items-center gap-1"><i data-lucide="bitcoin" class="w-4 h-4 text-orange-500"></i> ${block.exchange}</h4>
-                            </div>
-                            <span class="text-lg font-bold text-slate-800">${block.amount} $</span>
-                        </div>
-                        <div class="bg-orange-50 rounded-lg p-3">
-                            <p class="text-[11px] text-slate-500 mb-2 flex items-center gap-1 border-b border-orange-100 pb-2">
-                                <i data-lucide="calendar" class="w-3 h-3"></i> Bitiş: <b class="text-slate-700">${endString}</b>
-                            </p>
-                            <div class="flex items-center gap-3">
-                                <i data-lucide="timer" class="w-5 h-5 text-orange-500 animate-pulse"></i>
-                                <div>
-                                    <p class="text-xs text-orange-600 font-medium">Kalan Süre</p>
-                                    <p class="font-mono font-bold text-orange-800" id="timer-${block.id}">Hesaplanıyor...</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mt-4 flex gap-2">
-                            <button onclick="resolveBlock('${block.id}')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium py-2 rounded transition-colors" title="Test için süreyi atla">Manuel Bitir</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-            lucide.createIcons();
-            updateTimerDisplay(); 
+            badge.innerText = state.blocks.length;
+            badge.classList.toggle('hidden', state.blocks.length === 0);
+            mobBadge.innerText = state.blocks.length;
+            mobBadge.classList.toggle('hidden', state.blocks.length === 0);
+            document.getElementById('empty-blocks').classList.toggle('hidden', state.blocks.length > 0);
+
+            container.innerHTML = state.blocks.map(b => `
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 relative">
+                    <div class="text-xs font-bold text-slate-400 uppercase">${b.person}</div>
+                    <div class="text-lg font-bold">${b.amount} $ - ${b.exchange}</div>
+                    <div class="mt-2 text-xs text-slate-500">Bitiş: ${new Date(b.endTime).toLocaleString()}</div>
+                    <div class="mt-3 font-mono font-bold text-orange-600" id="timer-${b.id}">--:--:--</div>
+                    <button onclick="resolveBlock(${b.id})" class="mt-4 w-full bg-slate-100 py-1 rounded text-xs">Bitir</button>
+                </div>`).join('');
+            updateTimers();
         }
 
-        function resolveBlock(id) {
-            const index = state.blocks.findIndex(b => b.id === id);
-            if(index > -1) {
-                const block = state.blocks[index];
-                state.blocks.splice(index, 1);
-                addHistoryLog(block.person, 'Blokaj Bitti', `${block.exchange} üzerindeki ${block.amount}$ tutarındaki fon serbest kaldı.`);
-                showToast('Blokaj sonlandırıldı');
-                updateBlocksBadge();
-                renderBlocks();
-                saveStateToCloud(); // Buluta kaydet
-            }
+        async function resolveBlock(id) {
+            state.blocks = state.blocks.filter(b => b.id !== id);
+            renderBlocks();
+            await saveData();
         }
 
-        function startTimerLoop() {
-            if(timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimerDisplay, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const now = Date.now();
-            let needsRender = false;
-
-            state.blocks.forEach(block => {
-                const timerEl = document.getElementById(`timer-${block.id}`);
-                const progressEl = document.getElementById(`progress-${block.id}`);
-                if(!timerEl) return;
-
-                const diff = block.endTime - now;
-                const totalDuration = block.endTime - block.startTime;
-                
-                if (diff <= 0) {
-                    resolveBlock(block.id);
-                    needsRender = true;
-                } else {
-                    const hours = Math.floor(diff / (1000 * 60 * 60));
-                    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                    
-                    timerEl.textContent = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-                    
-                    if(progressEl) {
-                        const percent = (diff / totalDuration) * 100;
-                        progressEl.style.width = `${percent}%`;
-                    }
-                }
+        function updateTimers() {
+            state.blocks.forEach(b => {
+                const el = document.getElementById(`timer-${b.id}`);
+                if (!el) return;
+                const diff = b.endTime - Date.now();
+                if (diff <= 0) { el.innerText = "SÜRE DOLDU"; return; }
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                const s = Math.floor((diff % 60000) / 1000);
+                el.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
             });
-
-            if(needsRender) renderBlocks();
         }
 
-        // --- HISTORY LOGIC ---
         function addHistoryLog(person, type, detail) {
-            const pName = person === 'aydin' ? 'Aydın Kaya' : (person === 'berna' ? 'Berna Kaya' : 'Sistem');
-            state.history.unshift({
-                date: new Date().toLocaleString('tr-TR'),
-                person: pName,
-                type: type,
-                detail: detail
-            });
+            state.history.unshift({ date: new Date().toLocaleString(), person, type, detail });
             renderHistory();
-        }
-
-        function performDailyClose() {
-            const aydinTotalTRY = Object.values(state.aydin.banks).reduce((a,b)=>a+b,0);
-            const aydinTotalUSD = Object.values(state.aydin.crypto).reduce((a,b)=>a+b,0);
-            const bernaTotalTRY = Object.values(state.berna.banks).reduce((a,b)=>a+b,0);
-            const bernaTotalUSD = Object.values(state.berna.crypto).reduce((a,b)=>a+b,0);
-
-            const detail = `
-                Aydın: ${formatMoney(aydinTotalTRY, 'TRY')} / ${formatMoney(aydinTotalUSD, 'USD')} <br>
-                Berna: ${formatMoney(bernaTotalTRY, 'TRY')} / ${formatMoney(bernaTotalUSD, 'USD')}
-            `;
-
-            addHistoryLog('system', 'Günlük Kapanış Özeti', detail);
-            showToast('Günlük bakiye durumu kaydedildi');
-            saveStateToCloud(); // Buluta kaydet
-            switchTab('history');
         }
 
         function renderHistory() {
             const tbody = document.getElementById('history-tbody');
-            const emptyState = document.getElementById('empty-history');
-            
-            if(state.history.length === 0) {
-                tbody.innerHTML = '';
-                emptyState.classList.remove('hidden');
-                return;
-            }
-            
-            emptyState.classList.add('hidden');
-            
-            tbody.innerHTML = state.history.map(log => {
-                const pColor = log.person.includes('Aydın') ? 'bg-blue-100 text-blue-700' : (log.person.includes('Berna') ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-700');
-                return `
-                    <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap text-xs font-medium text-slate-500">${log.date}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${pColor}">${log.person}</span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-700">${log.type}</td>
-                        <td class="px-6 py-4 text-sm text-slate-600">${log.detail}</td>
-                    </tr>
-                `;
-            }).join('');
+            document.getElementById('empty-history').classList.toggle('hidden', state.history.length > 0);
+            tbody.innerHTML = state.history.map(h => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-6 py-4 text-xs text-slate-500">${h.date}</td>
+                    <td class="px-6 py-4 font-bold capitalize">${h.person}</td>
+                    <td class="px-6 py-4 font-semibold">${h.type}</td>
+                    <td class="px-6 py-4 text-slate-600">${h.detail}</td>
+                </tr>`).join('');
         }
 
-        // --- GLOBAL EXPORTS FOR HTML ONCLICK ---
+        async function performDailyClose() {
+            addHistoryLog('Sistem', 'Günlük Kapanış', 'Tüm bakiyeler buluta başarıyla yedeklendi.');
+            await saveData();
+            showToast("Veriler Buluta Kaydedildi!");
+        }
+
+        function showToast(m) {
+            const c = document.getElementById('toast-container');
+            const t = document.createElement('div');
+            t.className = "bg-slate-800 text-white px-6 py-3 rounded-lg shadow-xl toast translate-x-full";
+            t.innerText = m;
+            c.appendChild(t);
+            setTimeout(() => t.classList.remove('translate-x-full'), 100);
+            setTimeout(() => { t.classList.add('translate-x-full'); setTimeout(() => t.remove(), 500); }, 3000);
+        }
+
+        // Init
+        window.onload = () => {
+            initAuth();
+            fetchRate();
+            setInterval(fetchRate, 30000);
+            setInterval(updateTimers, 1000);
+            updateTransferForm();
+            renderDashboard();
+            lucide.createIcons();
+        };
+
+        // Exports
         window.switchTab = switchTab;
         window.openEditModal = openEditModal;
         window.closeEditModal = closeEditModal;
